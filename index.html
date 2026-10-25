@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Gas Brother</title>
+    <meta name="description" content="A simple gas mileage tracker. Your data stays on your device.">
+    <meta name="theme-color" content="#f7f3e9">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Gas Brother">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/icon-180.png">
+    <style>
+        @font-face {
+            font-family: 'Rug Pull';
+            src: url('fonts/TAYRugPull.otf') format('opentype');
+            font-display: swap;
+        }
+
+        @font-face {
+            font-family: 'Lumios Typewriter';
+            src: url('fonts/LumiosTypewriter-Old.ttf') format('truetype');
+            font-display: swap;
+        }
+
+        :root {
+            --parchment: #f7f3e9;
+            --paper: #fffdf7;
+            --ink: #2c2416;
+            --heading: #4a3f2f;
+            --green: #3d5a42;
+            --tan: #8b7759;
+            --light-tan: #c9bda5;
+            --muted: #6b5d4f;
+            --rust: #a0522d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Lumios Typewriter', Georgia, serif;
+            font-size: 17px;
+            line-height: 1.6;
+            color: var(--ink);
+            background-color: var(--parchment);
+            background-image: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(139, 119, 89, 0.02) 2px, rgba(139, 119, 89, 0.02) 4px);
+            padding: calc(16px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom));
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin: 10px 0 24px;
+        }
+
+        header img {
+            width: 56px;
+            height: 56px;
+        }
+
+        h1 {
+            font-family: 'Rug Pull', Georgia, serif;
+            font-weight: normal;
+            font-size: 40px;
+            letter-spacing: 1px;
+            color: var(--heading);
+            line-height: 1.1;
+        }
+
+        h2 {
+            font-family: 'Rug Pull', Georgia, serif;
+            font-weight: normal;
+            font-size: 22px;
+            color: var(--heading);
+            margin-bottom: 12px;
+        }
+
+        .card {
+            background: var(--paper);
+            border: 1px solid var(--light-tan);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        input[type="date"],
+        input[type="number"] {
+            width: 100%;
+            padding: 10px 12px;
+            min-height: 44px;
+            border: 1px solid var(--light-tan);
+            border-radius: 0;
+            background: var(--parchment);
+            color: var(--ink);
+            font-family: inherit;
+            font-size: 16px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--green);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 16px 0 20px;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            color: var(--ink);
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--green);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: var(--heading);
+            color: var(--parchment);
+            border: 1px solid var(--heading);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: var(--green);
+            border-color: var(--green);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--heading);
+            border-color: var(--light-tan);
+        }
+
+        .btn-secondary:hover {
+            background: transparent;
+            border-color: var(--tan);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--rust);
+            border-color: transparent;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .btn-danger:hover {
+            background: transparent;
+            border-color: transparent;
+            text-decoration: underline;
+        }
+
+        .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dotted var(--light-tan);
+        }
+
+        .stat-label {
+            color: var(--muted);
+        }
+
+        .stat-value {
+            color: var(--green);
+        }
+
+        .last-mpg {
+            text-align: center;
+            font-size: 20px;
+            color: var(--heading);
+            margin: 14px 0 4px;
+        }
+
+        .last-mpg:empty {
+            display: none;
+        }
+
+        .stats .btn {
+            margin-top: 16px;
+        }
+
+        .chart-container {
+            margin-bottom: 26px;
+        }
+
+        .chart-container:last-child {
+            margin-bottom: 0;
+        }
+
+        .chart-title {
+            color: var(--heading);
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .chart-box {
+            position: relative;
+            height: 200px;
+        }
+
+        .entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 0;
+            border-bottom: 1px dotted var(--light-tan);
+            font-size: 15px;
+        }
+
+        .entry:last-child {
+            border-bottom: none;
+        }
+
+        .entry-date {
+            color: var(--heading);
+        }
+
+        .entry-details {
+            color: var(--muted);
+        }
+
+        .partial-indicator {
+            color: var(--rust);
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: var(--tan);
+            font-size: 20px;
+            line-height: 1;
+            padding: 4px 8px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            color: var(--rust);
+        }
+
+        .empty {
+            color: var(--muted);
+            text-align: center;
+            font-style: italic;
+        }
+
+        .link-btn {
+            background: none;
+            border: none;
+            color: var(--green);
+            font-family: inherit;
+            font-size: 15px;
+            cursor: pointer;
+            text-decoration: underline;
+            display: block;
+            margin: 12px auto 0;
+        }
+
+        .note {
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
+        .backup-status {
+            font-size: 15px;
+            margin-bottom: 16px;
+            color: var(--muted);
+        }
+
+        .backup-status.stale {
+            color: var(--rust);
+        }
+
+        .install-hint {
+            border-color: var(--tan);
+            font-size: 15px;
+            position: relative;
+            padding-right: 40px;
+        }
+
+        .install-hint .delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 6px;
+        }
+
+        .credit {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        a {
+            color: var(--green);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="icons/icon.svg" alt="">
+            <h1>Gas Brother</h1>
+        </header>
+
+        <div class="card install-hint" id="installHint" hidden>
+            <button class="delete-btn" onclick="dismissInstallHint()" aria-label="Dismiss">×</button>
+            To keep this on your phone like an app, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
+        </div>
+
+        <div class="card">
+            <div class="input-group">
+                <label for="date">Date</label>
+                <input type="date" id="date">
+            </div>
+
+            <div class="input-group">
+                <label for="cost">Cost ($)</label>
+                <input type="number" id="cost" step="0.01" inputmode="decimal" placeholder="45.00">
+            </div>
+
+            <div class="input-group">
+                <label for="gallons">Gallons</label>
+                <input type="number" id="gallons" step="0.001" inputmode="decimal" placeholder="12.500">
+            </div>
+
+            <div class="input-group">
+                <label for="odometer">Odometer</label>
+                <input type="number" id="odometer" inputmode="numeric" placeholder="50000">
+            </div>
+
+            <div class="checkbox-group">
+                <input type="checkbox" id="partial">
+                <label for="partial">Partial fill</label>
+            </div>
+
+            <button class="btn" onclick="addEntry()">Add Entry</button>
+            <button class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+        </div>
+
+        <div class="card stats">
+            <h2>Stats</h2>
+            <div class="stat-row">
+                <span class="stat-label">Total miles</span>
+                <span class="stat-value" id="totalMiles">-</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Total gallons</span>
+                <span class="stat-value" id="totalGallons">-</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Overall MPG</span>
+                <span class="stat-value" id="overallMPG">-</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Total spent</span>
+                <span class="stat-value" id="totalSpent">-</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Avg price/gal</span>
+                <span class="stat-value" id="avgPrice">-</span>
+            </div>
+            <div class="last-mpg" id="lastMPG"></div>
+            <button class="btn btn-secondary" onclick="toggleCharts()" id="showChartsBtn">Show Charts</button>
+        </div>
+
+        <div class="card" id="chartsSection" hidden>
+            <div class="chart-container">
+                <div class="chart-title">MPG over time</div>
+                <div class="chart-box"><canvas id="mpgChart"></canvas></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Gas prices over time</div>
+                <div class="chart-box"><canvas id="priceChart"></canvas></div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Miles driven per month</div>
+                <div class="chart-box"><canvas id="milesChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Entries</h2>
+            <div id="entriesList"></div>
+            <button class="link-btn" id="showAllBtn" onclick="toggleShowAll()" hidden></button>
+        </div>
+
+        <div class="card">
+            <h2>Backup</h2>
+            <p class="note">Your entries live only on this device, nowhere else. Save a backup now and then (to iCloud Drive, Files, email, wherever) so a new phone or a cleared browser doesn't take them with it.</p>
+            <p class="backup-status" id="backupStatus"></p>
+            <button class="btn" onclick="exportData()">Save Backup</button>
+            <button class="btn btn-secondary" onclick="importData()">Restore From Backup</button>
+            <button class="btn btn-danger" onclick="clearAllData()">Delete all entries</button>
+            <input type="file" id="importFile" hidden accept=".json,application/json" onchange="handleImport(event)">
+        </div>
+
+        <div class="credit">
+            Made by <a href="https://mgilvryallen.com" target="_blank">M'Gilvry Allen</a>
+        </div>
+    </div>
+
+    <script src="chart.min.js"></script>
+    <script>
+        const STORAGE_KEY = 'gasBrotherData';
+        const BACKUP_KEY = 'gasBrotherLastBackup';
+        const HINT_KEY = 'gasBrotherHideInstallHint';
+        const RECENT_COUNT = 10;
+
+        // Local-time YYYY-MM-DD (toISOString would give tomorrow's date on a US evening)
+        function todayString() {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function load(key, fallback) {
+            try {
+                const value = localStorage.getItem(key);
+                return value === null ? fallback : JSON.parse(value);
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function save() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(gasEntries));
+        }
+
+        function sortEntries() {
+            gasEntries.sort((a, b) => a.date.localeCompare(b.date) || (a.odometer || 0) - (b.odometer || 0));
+        }
+
+        let gasEntries = load(STORAGE_KEY, []);
+        let showAll = false;
+
+        document.getElementById('date').value = todayString();
+
+        function addEntry() {
+            const date = document.getElementById('date').value;
+            const cost = parseFloat(document.getElementById('cost').value);
+            const gallons = parseFloat(document.getElementById('gallons').value);
+            const odometer = parseInt(document.getElementById('odometer').value);
+            const partial = document.getElementById('partial').checked;
+
+            if (!date || !cost || !gallons) {
+                alert('Please fill in date, cost, and gallons');
+                return;
+            }
+
+            gasEntries.push({
+                date,
+                cost,
+                gallons,
+                odometer: odometer || null,
+                partial,
+                timestamp: Date.now()
+            });
+            sortEntries();
+            save();
+
+            updateDisplay();
+            clearForm();
+        }
+
+        function clearForm() {
+            document.getElementById('cost').value = '';
+            document.getElementById('gallons').value = '';
+            document.getElementById('odometer').value = '';
+            document.getElementById('partial').checked = false;
+            document.getElementById('date').value = todayString();
+        }
+
+        function deleteEntry(index) {
+            if (confirm('Delete this entry?')) {
+                gasEntries.splice(index, 1);
+                save();
+                updateDisplay();
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Delete ALL entries? This cannot be undone. Save a backup first if you might want them.')) {
+                gasEntries = [];
+                save();
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            updateStats();
+            updateEntriesList();
+            updateCharts();
+            updateBackupStatus();
+        }
+
+        function toggleCharts() {
+            const chartsSection = document.getElementById('chartsSection');
+            const showBtn = document.getElementById('showChartsBtn');
+
+            chartsSection.hidden = !chartsSection.hidden;
+            showBtn.textContent = chartsSection.hidden ? 'Show Charts' : 'Hide Charts';
+            updateCharts();
+        }
+
+        let mpgChart, priceChart, milesChart;
+
+        if (window.Chart) {
+            Chart.defaults.font.family = "'Lumios Typewriter', Georgia, serif";
+            Chart.defaults.color = '#6b5d4f';
+        }
+
+        function chartOptions(yTickCallback, beginAtZero) {
+            const y = { grid: { color: '#e8dfcc' }, beginAtZero };
+            if (yTickCallback) y.ticks = { callback: yTickCallback };
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { color: '#e8dfcc' } },
+                    y
+                }
+            };
+        }
+
+        // MPG per tank, full fill to full fill. Gallons from any partial fills in between count
+        // toward the tank, since that gas was burned over the same miles.
+        function tankMPGs() {
+            const tanks = [];
+            let lastFull = null;
+            let gallons = 0;
+
+            gasEntries.forEach(entry => {
+                gallons += entry.gallons;
+                if (entry.partial || !entry.odometer) return;
+                if (lastFull) {
+                    const miles = entry.odometer - lastFull.odometer;
+                    tanks.push({ date: entry.date, miles, gallons, mpg: parseFloat((miles / gallons).toFixed(1)) });
+                }
+                lastFull = entry;
+                gallons = 0;
+            });
+            return tanks;
+        }
+
+        function updateCharts() {
+            if (document.getElementById('chartsSection').hidden || !window.Chart) return;
+
+            const mpgData = tankMPGs();
+            const monthlyMiles = {};
+
+            mpgData.forEach(tank => {
+                const month = tank.date.substring(0, 7);
+                monthlyMiles[month] = (monthlyMiles[month] || 0) + tank.miles;
+            });
+
+            const priceData = gasEntries.map(entry => ({
+                date: entry.date,
+                price: parseFloat((entry.cost / entry.gallons).toFixed(3))
+            }));
+
+            if (mpgChart) mpgChart.destroy();
+            mpgChart = new Chart(document.getElementById('mpgChart'), {
+                type: 'line',
+                data: {
+                    labels: mpgData.map(d => formatDateShort(d.date)),
+                    datasets: [{
+                        data: mpgData.map(d => d.mpg),
+                        borderColor: '#3d5a42',
+                        backgroundColor: 'rgba(61, 90, 66, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: chartOptions(null, false)
+            });
+
+            if (priceChart) priceChart.destroy();
+            priceChart = new Chart(document.getElementById('priceChart'), {
+                type: 'line',
+                data: {
+                    labels: priceData.map(d => formatDateShort(d.date)),
+                    datasets: [{
+                        data: priceData.map(d => d.price),
+                        borderColor: '#a0522d',
+                        backgroundColor: 'rgba(160, 82, 45, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: chartOptions(v => '$' + v.toFixed(2), false)
+            });
+
+            if (milesChart) milesChart.destroy();
+            milesChart = new Chart(document.getElementById('milesChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(monthlyMiles).map(formatMonth),
+                    datasets: [{
+                        data: Object.values(monthlyMiles),
+                        backgroundColor: '#8b7759'
+                    }]
+                },
+                options: chartOptions(null, true)
+            });
+        }
+
+        // Parse YYYY-MM-DD as plain text so dates don't shift a day in US time zones
+        function formatDateShort(dateStr) {
+            const [, m, d] = dateStr.split('-').map(Number);
+            return m + '/' + d;
+        }
+
+        function formatMonth(monthStr) {
+            const [y, m] = monthStr.split('-');
+            return m.replace(/^0/, '') + '/' + y.slice(2);
+        }
+
+        function formatDateLong(dateStr) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        function setText(id, text) {
+            document.getElementById(id).textContent = text;
+        }
+
+        function updateStats() {
+            ['totalSpent', 'totalGallons', 'avgPrice', 'totalMiles', 'overallMPG'].forEach(id => setText(id, '-'));
+            setText('lastMPG', '');
+            if (gasEntries.length === 0) return;
+
+            const totalSpent = gasEntries.reduce((sum, entry) => sum + entry.cost, 0);
+            const totalGallons = gasEntries.reduce((sum, entry) => sum + entry.gallons, 0);
+            const entriesWithOdo = gasEntries.filter(e => e.odometer);
+
+            setText('totalSpent', `$${totalSpent.toFixed(2)}`);
+            setText('totalGallons', totalGallons.toFixed(1));
+            setText('avgPrice', `$${(totalSpent / totalGallons).toFixed(3)}`);
+
+            if (entriesWithOdo.length >= 2) {
+                const totalMiles = entriesWithOdo[entriesWithOdo.length - 1].odometer - entriesWithOdo[0].odometer;
+                const gallonsUsed = entriesWithOdo.slice(1).reduce((sum, entry) => sum + entry.gallons, 0);
+
+                setText('totalMiles', totalMiles.toLocaleString());
+                setText('overallMPG', (totalMiles / gallonsUsed).toFixed(1));
+
+                const tanks = tankMPGs();
+                if (tanks.length) {
+                    setText('lastMPG', `Last tank: ${tanks[tanks.length - 1].mpg.toFixed(1)} MPG`);
+                }
+            }
+        }
+
+        function toggleShowAll() {
+            showAll = !showAll;
+            updateEntriesList();
+        }
+
+        function updateEntriesList() {
+            const list = document.getElementById('entriesList');
+            const showAllBtn = document.getElementById('showAllBtn');
+
+            showAllBtn.hidden = gasEntries.length <= RECENT_COUNT;
+            showAllBtn.textContent = showAll ? 'Show recent only' : `Show all ${gasEntries.length} entries`;
+
+            if (gasEntries.length === 0) {
+                list.innerHTML = '<p class="empty">No entries yet</p>';
+                return;
+            }
+
+            const shown = (showAll ? gasEntries : gasEntries.slice(-RECENT_COUNT)).slice().reverse();
+
+            list.innerHTML = shown.map((entry, index) => {
+                const actualIndex = gasEntries.length - 1 - index;
+                const pricePerGal = (entry.cost / entry.gallons).toFixed(3);
+                const partialText = entry.partial ? '<span class="partial-indicator">partial</span> · ' : '';
+
+                return `
+                    <div class="entry">
+                        <div>
+                            <span class="entry-date">${formatDateLong(entry.date)}</span><br>
+                            <span class="entry-details">${partialText}$${entry.cost.toFixed(2)} · ${entry.gallons.toFixed(1)} gal · $${pricePerGal}/gal</span>
+                            ${entry.odometer ? `<br><span class="entry-details">${entry.odometer.toLocaleString()} mi</span>` : ''}
+                        </div>
+                        <button class="delete-btn" onclick="deleteEntry(${actualIndex})" aria-label="Delete entry">×</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ---- Backup ----
+
+        function updateBackupStatus() {
+            const status = document.getElementById('backupStatus');
+            const last = load(BACKUP_KEY, null);
+
+            if (gasEntries.length === 0) {
+                status.textContent = '';
+                status.classList.remove('stale');
+                return;
+            }
+
+            const days = last ? Math.floor((Date.now() - last) / 86400000) : null;
+            if (days === null) {
+                status.textContent = 'No backup saved yet.';
+            } else if (days === 0) {
+                status.textContent = 'Last backup: today.';
+            } else {
+                status.textContent = `Last backup: ${days} day${days === 1 ? '' : 's'} ago.`;
+            }
+            status.classList.toggle('stale', days === null || days > 30);
+        }
+
+        async function exportData() {
+            const backup = {
+                app: 'gas-brother',
+                version: 1,
+                exported: new Date().toISOString(),
+                entries: gasEntries
+            };
+            const filename = `gas-brother-backup-${todayString()}.json`;
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const file = new File([blob], filename, { type: 'application/json' });
+
+            // On phones, the share sheet lets you save straight to Files / iCloud Drive
+            if (navigator.canShare && navigator.canShare({ files: [file] }) && matchMedia('(pointer: coarse)').matches) {
+                try {
+                    await navigator.share({ files: [file], title: 'Gas Brother backup' });
+                    markBackedUp();
+                } catch (err) {
+                    if (err.name !== 'AbortError') alert('Could not share backup: ' + err.message);
+                }
+                return;
+            }
+
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+            markBackedUp();
+        }
+
+        function markBackedUp() {
+            localStorage.setItem(BACKUP_KEY, JSON.stringify(Date.now()));
+            updateBackupStatus();
+        }
+
+        function importData() {
+            document.getElementById('importFile').click();
+        }
+
+        // Accepts new backups ({ entries: [...] }) and old Gas Tracker exports (a bare array)
+        function cleanEntries(data) {
+            const raw = Array.isArray(data) ? data : (data && Array.isArray(data.entries) ? data.entries : null);
+            if (!raw) return null;
+
+            return raw.filter(e => e && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && Number(e.cost) > 0 && Number(e.gallons) > 0)
+                .map(e => ({
+                    date: e.date,
+                    cost: Number(e.cost),
+                    gallons: Number(e.gallons),
+                    odometer: parseInt(e.odometer) || null,
+                    partial: Boolean(e.partial),
+                    timestamp: Number(e.timestamp) || null
+                }));
+        }
+
+        function handleImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                let imported;
+                try {
+                    imported = cleanEntries(JSON.parse(e.target.result));
+                } catch (err) {
+                    alert('Could not read that file: ' + err.message);
+                    return;
+                }
+                if (!imported) {
+                    alert("That doesn't look like a Gas Brother backup.");
+                    return;
+                }
+                if (!confirm(`Restore ${imported.length} entries? They'll be merged with what's already here (duplicates are skipped).`)) return;
+
+                const seen = new Set();
+                const before = gasEntries.length;
+                gasEntries = [...gasEntries, ...imported].filter(entry => {
+                    const key = `${entry.date}|${entry.cost}|${entry.gallons}|${entry.odometer}`;
+                    if (seen.has(key)) return false;
+                    seen.add(key);
+                    return true;
+                });
+                sortEntries();
+                save();
+                updateDisplay();
+                alert(`Added ${gasEntries.length - before} new entries.`);
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // ---- App setup ----
+
+        function isStandalone() {
+            return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+        }
+
+        function dismissInstallHint() {
+            localStorage.setItem(HINT_KEY, 'true');
+            document.getElementById('installHint').hidden = true;
+        }
+
+        const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        if (isIOS && !isStandalone() && !load(HINT_KEY, false)) {
+            document.getElementById('installHint').hidden = false;
+        }
+
+        // Ask the browser not to evict this app's storage when space runs low
+        if (navigator.storage && navigator.storage.persist) {
+            navigator.storage.persist();
+        }
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>
