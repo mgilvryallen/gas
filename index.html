@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Gas Brother</title>
+    <title>Gas</title>
     <meta name="description" content="A simple gas mileage tracker. Your data stays on your device.">
     <meta name="theme-color" content="#f7f3e9">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="Gas Brother">
+    <meta name="apple-mobile-web-app-title" content="Gas">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
@@ -320,6 +320,47 @@
             color: var(--rust);
         }
 
+        .btn-pair {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn-pair .btn {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .data-links {
+            margin-top: 6px;
+        }
+
+        .data-links .link-btn {
+            margin-top: 8px;
+        }
+
+        .danger-link {
+            color: var(--rust) !important;
+        }
+
+        #syncSetup {
+            margin-top: 14px;
+        }
+
+        .sync-steps {
+            color: var(--muted);
+            font-size: 15px;
+            margin: 0 0 16px 22px;
+        }
+
+        .sync-steps li {
+            margin-bottom: 6px;
+        }
+
+        #syncToken {
+            margin-bottom: 12px;
+        }
+
         .install-hint {
             border-color: var(--tan);
             font-size: 15px;
@@ -343,7 +384,8 @@
         a {
             color: var(--green);
         }
-        input[type="text"] {
+        input[type="text"],
+        input[type="password"] {
             width: 100%;
             padding: 10px 12px;
             min-height: 44px;
@@ -600,7 +642,7 @@
     <div class="container">
         <header>
             <img src="icons/icon.svg" alt="">
-            <h1>Gas Brother</h1>
+            <h1>Gas</h1>
         </header>
 
         <div class="card install-hint" id="installHint" hidden>
@@ -748,14 +790,39 @@
             <button class="link-btn" id="showAllBtn" onclick="toggleShowAll()" hidden></button>
         </div>
 
-        <div class="card">
-            <h2>Backup</h2>
-            <p class="note">Your entries live only on this device, nowhere else. Save a backup now and then (to iCloud Drive, Files, email, wherever) so a new phone or a cleared browser doesn't take them with it. One backup holds all your vehicles.</p>
+        <div class="card" id="dataCard">
+            <h2>Your Data</h2>
+            <p class="note" id="dataNote"></p>
+            <p class="backup-status" id="syncStatus" hidden></p>
             <p class="backup-status" id="backupStatus"></p>
-            <button class="btn" onclick="exportData()">Save Backup</button>
-            <button class="btn btn-secondary" onclick="importData()">Restore From Backup</button>
-            <button class="btn btn-danger" onclick="clearAllData()">Delete all entries for this vehicle</button>
+
+            <div id="syncOff">
+                <button class="btn" onclick="toggleSyncSetup()">Sync Across Devices</button>
+                <div id="syncSetup" hidden>
+                    <ol class="sync-steps">
+                        <li>No GitHub account? <a href="https://github.com/signup" target="_blank">Make one</a> (free).</li>
+                        <li><a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Gas%20app%20sync" target="_blank">Make a token</a>. It's already filled in: set <b>Expiration</b> to <b>No expiration</b>, then tap <b>Generate token</b> at the bottom.</li>
+                        <li>Copy the token (it starts with <code>ghp_</code>) and paste it here. Do the same on each device.</li>
+                    </ol>
+                    <input type="password" id="syncToken" placeholder="ghp_…" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="GitHub token">
+                    <button class="btn" id="connectBtn" onclick="connectSync()">Turn On Sync</button>
+                </div>
+            </div>
+            <div id="syncOn" hidden>
+                <button class="btn" onclick="syncNow(true)">Sync Now</button>
+            </div>
+
+            <div class="btn-pair">
+                <button class="btn btn-secondary" onclick="exportData()">Save Backup</button>
+                <button class="btn btn-secondary" onclick="importData()">Restore Backup</button>
+            </div>
             <input type="file" id="importFile" hidden accept=".json,application/json" onchange="handleImport(event)">
+
+            <div class="data-links">
+                <button class="link-btn" id="copyTokenLink" onclick="copyToken()" hidden>copy token for another device</button>
+                <button class="link-btn" id="syncOffLink" onclick="disconnectSync()" hidden>turn off sync on this device</button>
+                <button class="link-btn danger-link" onclick="clearAllData()">delete all entries for this vehicle</button>
+            </div>
         </div>
 
         <div class="credit">
@@ -770,6 +837,8 @@
         const CURRENT_KEY = 'gasBrotherCurrentVehicle';
         const BACKUP_KEY = 'gasBrotherLastBackup';
         const HINT_KEY = 'gasBrotherHideInstallHint';
+        const DELETED_KEY = 'gasBrotherDeleted';
+        const SYNC_KEY = 'gasSync';
         const RECENT_COUNT = 10;
 
         // A tank this far from the vehicle's typical MPG probably hides an unlogged fill-up
@@ -847,10 +916,23 @@
             }
         }
 
-        function save() {
+        function save(fromSync) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(allEntries));
             localStorage.setItem(VEHICLES_KEY, JSON.stringify(vehicles));
             localStorage.setItem(CURRENT_KEY, JSON.stringify(currentId));
+            localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
+            if (!fromSync) scheduleSync();
+        }
+
+        // Sync merges by id, newest change wins, so every change is stamped
+        function touch(item) {
+            item.updated = Date.now();
+            return item;
+        }
+
+        // Deleted ids are remembered so a sync doesn't bring them back from another device
+        function forget(id) {
+            deleted[id] = Date.now();
         }
 
         function newId(prefix) {
@@ -872,6 +954,7 @@
         let allEntries = load(STORAGE_KEY, []);
         let vehicles = load(VEHICLES_KEY, []);
         let currentId = load(CURRENT_KEY, null);
+        let deleted = load(DELETED_KEY, {});
         let showAll = false;
         let editingId = null;
         let editingEntryId = null;
@@ -920,7 +1003,7 @@
 
             const editing = editingEntryId && findEntry(editingEntryId);
             if (editing) {
-                Object.assign(editing, { date, cost, gallons, odometer: odometer || null, partial, missed });
+                touch(Object.assign(editing, { date, cost, gallons, odometer: odometer || null, partial, missed }));
             } else {
                 allEntries.push({
                     id: newId('e'),
@@ -931,7 +1014,8 @@
                     odometer: odometer || null,
                     partial,
                     missed,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    updated: Date.now()
                 });
             }
             sortEntries();
@@ -980,6 +1064,7 @@
         function deleteEntry(id) {
             if (confirm('Delete this entry?')) {
                 allEntries = allEntries.filter(e => e.id !== id);
+                forget(id);
                 if (id === editingEntryId) clearForm();
                 save();
                 updateDisplay();
@@ -987,13 +1072,13 @@
         }
 
         function markMissed(id) {
-            findEntry(id).missed = true;
+            touch(findEntry(id)).missed = true;
             save();
             updateDisplay();
         }
 
         function markOk(id) {
-            findEntry(id).mpgOk = true;
+            touch(findEntry(id)).mpgOk = true;
             save();
             updateDisplay();
         }
@@ -1001,6 +1086,7 @@
         function clearAllData() {
             const vehicle = currentVehicle();
             if (confirm(`Delete ALL entries for ${vehicle.name}? This cannot be undone. Save a backup first if you might want them.`)) {
+                vehicleEntries().forEach(e => forget(e.id));
                 allEntries = allEntries.filter(e => e.vehicleId !== currentId);
                 save();
                 updateDisplay();
@@ -1446,9 +1532,9 @@
             const name = document.getElementById('vehicleName').value.trim() || TYPE_NAMES[draft.type];
 
             if (editingId) {
-                Object.assign(vehicles.find(v => v.id === editingId), { name, type: draft.type, color: draft.color });
+                touch(Object.assign(vehicles.find(v => v.id === editingId), { name, type: draft.type, color: draft.color }));
             } else {
-                const vehicle = { id: newId('v'), name, type: draft.type, color: draft.color };
+                const vehicle = { id: newId('v'), name, type: draft.type, color: draft.color, updated: Date.now() };
                 vehicles.push(vehicle);
                 currentId = vehicle.id;
                 showAll = false;
@@ -1468,6 +1554,8 @@
             if (!confirm(`Delete ${vehicle.name} and its ${count} entries? This cannot be undone.`)) return;
 
             vehicles = vehicles.filter(v => v.id !== editingId);
+            forget(editingId);
+            vehicleEntries(editingId).forEach(e => forget(e.id));
             allEntries = allEntries.filter(e => e.vehicleId !== editingId);
             if (currentId === editingId) currentId = vehicles[0].id;
             save();
@@ -1495,7 +1583,8 @@
             } else {
                 status.textContent = `Last backup: ${days} day${days === 1 ? '' : 's'} ago.`;
             }
-            status.classList.toggle('stale', days === null || days > 30);
+            // With sync on, an old backup is no emergency
+            status.classList.toggle('stale', !syncConfig() && (days === null || days > 30));
         }
 
         async function exportData() {
@@ -1513,7 +1602,7 @@
             // On phones, the share sheet lets you save straight to Files / iCloud Drive
             if (navigator.canShare && navigator.canShare({ files: [file] }) && matchMedia('(pointer: coarse)').matches) {
                 try {
-                    await navigator.share({ files: [file], title: 'Gas Brother backup' });
+                    await navigator.share({ files: [file], title: 'Gas backup' });
                     markBackedUp();
                 } catch (err) {
                     if (err.name !== 'AbortError') alert('Could not share backup: ' + err.message);
@@ -1550,7 +1639,8 @@
                 id: v.id,
                 name: String(v.name || 'Vehicle').slice(0, 30),
                 type: VEHICLE_TYPES.includes(v.type) ? v.type : 'sedan',
-                color: VEHICLE_COLORS[v.color] ? v.color : 'silver'
+                color: VEHICLE_COLORS[v.color] ? v.color : 'silver',
+                updated: Number(v.updated) || 0
             }));
 
             const entries = rawEntries.filter(e => e && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && Number(e.cost) > 0 && Number(e.gallons) > 0)
@@ -1564,7 +1654,8 @@
                     partial: Boolean(e.partial),
                     missed: Boolean(e.missed),
                     mpgOk: Boolean(e.mpgOk),
-                    timestamp: Number(e.timestamp) || null
+                    timestamp: Number(e.timestamp) || null,
+                    updated: Number(e.updated) || 0
                 }));
 
             return { vehicles: backupVehicles, entries };
@@ -1584,7 +1675,7 @@
                     return;
                 }
                 if (!backup) {
-                    alert("That doesn't look like a Gas Brother backup.");
+                    alert("That doesn't look like a Gas backup.");
                     return;
                 }
 
@@ -1597,9 +1688,11 @@
                 if (intoCurrent === backup.entries.length) question += ` into ${currentVehicle().name}`;
                 if (!confirm(question + "? They'll be merged with what's already here (duplicates are skipped).")) return;
 
-                vehicles.push(...newVehicles);
+                vehicles.push(...newVehicles.map(touch));
                 backup.entries.forEach(entry => {
                     if (!knownIds.has(entry.vehicleId)) entry.vehicleId = currentId;
+                    touch(entry);
+                    delete deleted[entry.id];
                 });
 
                 const seen = new Set();
@@ -1618,6 +1711,194 @@
             reader.readAsText(file);
             event.target.value = '';
         }
+
+        // ---- Sync ----
+        // Optional. The log is kept in a private ("secret") gist on the user's own GitHub account,
+        // reached with a token that can only touch gists. Each device keeps its full copy locally
+        // and merges with the gist: newest change wins per entry, deletions are remembered.
+        // (var, not let: save() runs during startup, before this part of the script.)
+
+        var SYNC_FILE = 'gas-sync.json';
+        var syncTimer = null;
+        var syncing = false;
+        var syncError = '';
+
+        function syncConfig() {
+            return load(SYNC_KEY, null);
+        }
+
+        function setSyncConfig(config) {
+            if (config) localStorage.setItem(SYNC_KEY, JSON.stringify(config));
+            else localStorage.removeItem(SYNC_KEY);
+        }
+
+        async function github(path, token, options = {}) {
+            const response = await fetch('https://api.github.com' + path, {
+                ...options,
+                headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' }
+            });
+            if (response.status === 401) throw new Error("GitHub didn't accept that token. It may have expired or been deleted.");
+            if (response.status === 403 || response.status === 404) throw new Error('That token can\'t reach gists. Make a new one with the "gist" box ticked.');
+            if (!response.ok) throw new Error(`GitHub said ${response.status}.`);
+            return response.json();
+        }
+
+        function syncPayload() {
+            return JSON.stringify({ app: 'gas-brother', version: 2, synced: new Date().toISOString(), vehicles, entries: allEntries, deleted }, null, 1);
+        }
+
+        // The same data always gives the same string, whatever order its fields were written in
+        function canonical(data) {
+            const clean = cleanBackup(data) || { vehicles: [], entries: [] };
+            const byId = (a, b) => a.id.localeCompare(b.id);
+            const gone = data && typeof data.deleted === 'object' ? Object.keys(data.deleted).sort().map(id => [id, data.deleted[id]]) : [];
+            return JSON.stringify([clean.vehicles.sort(byId), clean.entries.sort(byId), gone]);
+        }
+
+        // Newest change wins for each id; anything deleted after its last change stays deleted
+        function mergeById(local, remote, gone) {
+            const byId = new Map();
+            [...remote, ...local].forEach(item => {
+                const existing = byId.get(item.id);
+                if (!existing || (item.updated || 0) >= (existing.updated || 0)) byId.set(item.id, item);
+            });
+            return [...byId.values()].filter(item => !(gone[item.id] >= (item.updated || 0)));
+        }
+
+        function mergeRemote(remoteData) {
+            const remote = cleanBackup(remoteData) || { vehicles: [], entries: [] };
+            const remoteDeleted = remoteData && typeof remoteData.deleted === 'object' ? remoteData.deleted : {};
+            Object.entries(remoteDeleted).forEach(([id, time]) => {
+                if (isSafeId(id) && Number(time) > (deleted[id] || 0)) deleted[id] = Number(time);
+            });
+
+            vehicles = mergeById(vehicles, remote.vehicles, deleted);
+            if (vehicles.length === 0) vehicles.push({ id: newId('v'), name: 'My Vehicle', type: 'sedan', color: 'silver', updated: Date.now() });
+            const vehicleIds = new Set(vehicles.map(v => v.id));
+            allEntries = mergeById(allEntries, remote.entries, deleted).filter(e => vehicleIds.has(e.vehicleId));
+            if (!vehicleIds.has(currentId)) currentId = vehicles[0].id;
+            sortEntries();
+        }
+
+        function scheduleSync() {
+            if (!syncConfig()) return;
+            clearTimeout(syncTimer);
+            syncTimer = setTimeout(() => syncNow(false), 1500);
+        }
+
+        async function syncNow(fromButton) {
+            const config = syncConfig();
+            if (!config || syncing) return;
+            syncing = true;
+            if (fromButton) setText('syncStatus', 'Syncing…');
+            try {
+                const gist = await github(`/gists/${config.gistId}`, config.token);
+                const file = gist.files[SYNC_FILE];
+                let content = file ? file.content : '{}';
+                if (file && file.truncated) content = await (await fetch(file.raw_url)).text();
+                const remoteData = JSON.parse(content || '{}');
+                const before = canonical({ vehicles, entries: allEntries, deleted });
+                mergeRemote(remoteData);
+                const after = canonical({ vehicles, entries: allEntries, deleted });
+                if (after !== before) {
+                    save(true);
+                    updateDisplay();
+                }
+                // Write back only if the gist is missing something, so its history doesn't fill up with copies
+                if (!file || canonical(remoteData) !== after) {
+                    await github(`/gists/${config.gistId}`, config.token, { method: 'PATCH', body: JSON.stringify({ files: { [SYNC_FILE]: { content: syncPayload() } } }) });
+                }
+                setSyncConfig({ ...config, lastSync: Date.now() });
+                syncError = '';
+            } catch (err) {
+                syncError = err.message || 'Could not reach GitHub.';
+            }
+            syncing = false;
+            renderSync();
+        }
+
+        async function connectSync() {
+            const token = document.getElementById('syncToken').value.trim();
+            if (!token) {
+                alert('Paste your GitHub token first.');
+                return;
+            }
+            setText('connectBtn', 'Connecting…');
+            try {
+                const user = await github('/user', token);
+                // Use the existing sync file if another device already made one
+                const gists = await github('/gists?per_page=100', token);
+                let gist = gists.find(g => g.files && g.files[SYNC_FILE]);
+                if (!gist) {
+                    gist = await github('/gists', token, {
+                        method: 'POST',
+                        body: JSON.stringify({ description: 'Gas app sync (private, made by the Gas app)', public: false, files: { [SYNC_FILE]: { content: syncPayload() } } })
+                    });
+                } else if (allEntries.length === 0) {
+                    // A brand-new device: take the synced log instead of adding an empty starter vehicle to it
+                    vehicles.forEach(v => forget(v.id));
+                }
+                setSyncConfig({ token, gistId: gist.id, login: user.login, lastSync: null });
+                document.getElementById('syncToken').value = '';
+                await syncNow(false);
+            } catch (err) {
+                alert(err.message || 'Could not reach GitHub.');
+            }
+            setText('connectBtn', 'Turn On Sync');
+            renderSync();
+        }
+
+        function disconnectSync() {
+            if (!confirm('Turn off sync on this device? Your entries stay here, and the copy on GitHub stays too.')) return;
+            setSyncConfig(null);
+            renderSync();
+        }
+
+        async function copyToken() {
+            const config = syncConfig();
+            try {
+                await navigator.clipboard.writeText(config.token);
+                alert('Token copied. Paste it into Gas on your other device (on an iPhone next to a Mac, it usually pastes straight across).');
+            } catch (err) {
+                prompt('Copy this token:', config.token);
+            }
+        }
+
+        function toggleSyncSetup() {
+            const setup = document.getElementById('syncSetup');
+            setup.hidden = !setup.hidden;
+            if (!setup.hidden) document.getElementById('syncToken').focus();
+        }
+
+        function renderSync() {
+            const config = syncConfig();
+            document.getElementById('syncOff').hidden = Boolean(config);
+            document.getElementById('syncOn').hidden = !config;
+            document.getElementById('copyTokenLink').hidden = !config;
+            document.getElementById('syncOffLink').hidden = !config;
+            document.getElementById('dataNote').textContent = config
+                ? 'Your entries are on this device and in a private file on your GitHub, synced whenever you open the app or make a change.'
+                : 'Your entries live only on this device. Turn on sync to use them on your phone and computer, or save a backup now and then (to iCloud Drive, Files, email). One backup holds all your vehicles.';
+
+            const status = document.getElementById('syncStatus');
+            status.hidden = !config;
+            if (!config) return;
+            if (syncError) {
+                status.textContent = `Sync problem: ${syncError}`;
+            } else if (!config.lastSync) {
+                status.textContent = `Connected as ${config.login}.`;
+            } else {
+                const minutes = Math.floor((Date.now() - config.lastSync) / 60000);
+                const when = minutes < 1 ? 'just now' : minutes < 60 ? `${minutes} min ago` : new Date(config.lastSync).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+                status.textContent = `Synced with ${config.login}'s GitHub ${when}.`;
+            }
+            status.classList.toggle('stale', Boolean(syncError));
+        }
+
+        // Pick up changes from other devices whenever the app comes back to the front
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') syncNow(false);
+        });
 
         // ---- App setup ----
 
@@ -1646,6 +1927,8 @@
         }
 
         updateDisplay();
+        renderSync();
+        syncNow(false);
 
         // New here: start by naming the first vehicle
         if (isNewUser) {

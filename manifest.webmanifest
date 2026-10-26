@@ -1,6 +1,6 @@
 {
-  "name": "Gas Brother",
-  "short_name": "Gas Brother",
+  "name": "Gas",
+  "short_name": "Gas",
   "description": "A simple gas mileage tracker. Your data stays on your device.",
   "start_url": "./",
   "scope": "./",

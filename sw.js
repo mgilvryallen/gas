@@ -1,6 +1,6 @@
 // Offline support: serve the app from cache, refresh the cache in the background.
 // Bump CACHE when files are added or removed.
-const CACHE = 'gas-brother-v1';
+const CACHE = 'gas-v2';
 const FILES = [
     './',
     'index.html',

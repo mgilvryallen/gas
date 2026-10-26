@@ -1,4 +1,4 @@
-# Gas Brother
+# Gas
 
 A simple gas mileage tracker: log fill-ups, see MPG, price per gallon, and miles per month.
 
@@ -19,7 +19,9 @@ It then opens like a regular app and works offline.
 
 ## Where your data lives
 
-Only on your device, in that browser's storage. There's no server and no account, and nobody else (including me) can see your entries.
+On your device, in that browser's storage. There's no server and no account, and nobody else (including me) can see your entries.
+
+**Sync (optional):** to use the same log on your phone and computer, turn on **Sync**. You make a GitHub token that can only touch gists, and the app keeps your log in a private gist on your own GitHub account. Each device keeps its own full copy and merges with the gist when you open it or make a change: the newest edit wins, and deletions carry over. The token is stored on your device only. To stop, tap **Turn off sync on this device**, and delete the token on GitHub if you like.
 
 That also means nobody can recover them for you. Tap **Save Backup** now and then and keep the file somewhere safe (iCloud Drive, Google Drive, email it to yourself). On a new phone, install the app and tap **Restore From Backup**.
 
