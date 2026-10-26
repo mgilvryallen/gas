@@ -38,6 +38,10 @@
             --rust: #a0522d;
         }
 
+        [hidden] {
+            display: none !important;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -135,6 +139,10 @@
         .checkbox-group label {
             margin: 0;
             color: var(--ink);
+        }
+
+        .checkbox-group + .checkbox-group {
+            margin-top: -8px;
         }
 
         input[type="checkbox"] {
@@ -335,6 +343,257 @@
         a {
             color: var(--green);
         }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 12px;
+            min-height: 44px;
+            border: 1px solid var(--light-tan);
+            border-radius: 0;
+            background: var(--parchment);
+            color: var(--ink);
+            font-family: inherit;
+            font-size: 16px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .small-btn {
+            background: transparent;
+            border: 1px solid var(--light-tan);
+            color: var(--heading);
+            padding: 6px 12px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .small-btn:hover {
+            border-color: var(--tan);
+        }
+
+        .vehicle-tile {
+            width: 48px;
+            height: 48px;
+            flex: none;
+        }
+
+        .vehicle-tile svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .vehicle-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+        }
+
+        .vehicle-name {
+            flex: 1;
+            font-family: 'Rug Pull', Georgia, serif;
+            font-size: 20px;
+            color: var(--heading);
+            overflow-wrap: anywhere;
+        }
+
+        .vehicle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px dotted var(--light-tan);
+        }
+
+        .vehicle-row:last-child {
+            border-bottom: none;
+            margin-bottom: 16px;
+        }
+
+        .vehicle-select {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: 17px;
+            color: var(--heading);
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .vehicle-select .vehicle-tile {
+            width: 40px;
+            height: 40px;
+        }
+
+        .vehicle-select small {
+            display: block;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .vehicle-row.current .vehicle-select {
+            color: var(--green);
+        }
+
+        .picker-label {
+            margin-bottom: 6px;
+        }
+
+        .picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .picker button {
+            width: 58px;
+            height: 58px;
+            padding: 2px;
+            background: none;
+            border: 2px solid transparent;
+            border-radius: 14px;
+            cursor: pointer;
+        }
+
+        .picker button.selected {
+            border-color: var(--green);
+        }
+
+        .picker .swatch {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 1px solid var(--heading);
+            border-radius: 50%;
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        .picker .swatch.selected {
+            border-color: var(--heading);
+            outline-color: var(--green);
+        }
+
+        .suspect {
+            margin-top: 8px;
+            padding: 10px 12px;
+            background: var(--parchment);
+            border: 1px solid var(--tan);
+            font-size: 14px;
+            color: var(--ink);
+        }
+
+        .suspect .small-btn {
+            margin: 8px 8px 0 0;
+        }
+
+        .suspect-note {
+            margin-top: 14px;
+            font-size: 15px;
+            color: var(--rust);
+        }
+
+        .chart-controls {
+            margin-bottom: 22px;
+        }
+
+        .range-chips {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .chip {
+            font-family: 'Rug Pull', Georgia, serif;
+            font-size: 15px;
+            letter-spacing: 1px;
+            padding: 6px 12px;
+            background: transparent;
+            border: 1px solid var(--light-tan);
+            color: var(--heading);
+            cursor: pointer;
+        }
+
+        .chip.selected {
+            background: var(--heading);
+            border-color: var(--heading);
+            color: var(--parchment);
+        }
+
+        .pan {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pan button {
+            background: none;
+            border: none;
+            color: var(--green);
+            font-size: 28px;
+            line-height: 1;
+            padding: 0 12px;
+            cursor: pointer;
+        }
+
+        .pan button:disabled {
+            color: var(--light-tan);
+            cursor: default;
+        }
+
+        .range-label {
+            color: var(--muted);
+            font-size: 15px;
+        }
+
+        .stat-value small {
+            display: block;
+            text-align: right;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .records-title {
+            margin: 18px 0 4px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .entry-actions {
+            display: flex;
+            align-items: center;
+            flex: none;
+        }
+
+        .edit-btn {
+            background: none;
+            border: none;
+            color: var(--green);
+            font-family: inherit;
+            font-size: 14px;
+            text-decoration: underline;
+            padding: 4px;
+            cursor: pointer;
+        }
+
+        .editing-note {
+            margin-bottom: 14px;
+            color: var(--green);
+        }
+
+        .suspect-note .link-btn {
+            display: inline;
+            margin: 0;
+            font-size: 15px;
+        }
     </style>
 </head>
 <body>
@@ -349,7 +608,35 @@
             To keep this on your phone like an app, tap <strong>Share</strong> then <strong>Add to Home Screen</strong>.
         </div>
 
-        <div class="card">
+        <div class="card vehicle-bar">
+            <div class="vehicle-tile" id="currentVehicleTile"></div>
+            <div class="vehicle-name" id="currentVehicleName"></div>
+            <button class="small-btn" onclick="toggleGarage()">Vehicles</button>
+        </div>
+
+        <div class="card" id="garage" hidden>
+            <h2>Vehicles</h2>
+            <div id="garageList"></div>
+            <button class="btn btn-secondary" onclick="editVehicle(null)">Add a Vehicle</button>
+        </div>
+
+        <div class="card" id="vehicleEditor" hidden>
+            <h2 id="editorTitle">Add a Vehicle</h2>
+            <div class="input-group">
+                <label for="vehicleName">Name</label>
+                <input type="text" id="vehicleName" maxlength="30" placeholder="Hank">
+            </div>
+            <label class="picker-label">Type</label>
+            <div class="picker" id="typePicker"></div>
+            <label class="picker-label">Color</label>
+            <div class="picker" id="colorPicker"></div>
+            <button class="btn" onclick="saveVehicle()">Save</button>
+            <button class="btn btn-secondary" onclick="closeEditor()">Cancel</button>
+            <button class="btn btn-danger" id="deleteVehicleBtn" onclick="deleteVehicle()">Delete this vehicle and its entries</button>
+        </div>
+
+        <div class="card" id="entryForm">
+            <p class="editing-note" id="editingNote" hidden></p>
             <div class="input-group">
                 <label for="date">Date</label>
                 <input type="date" id="date">
@@ -375,8 +662,13 @@
                 <label for="partial">Partial fill</label>
             </div>
 
-            <button class="btn" onclick="addEntry()">Add Entry</button>
-            <button class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+            <div class="checkbox-group">
+                <input type="checkbox" id="missed">
+                <label for="missed">Missed logging a fill-up before this one</label>
+            </div>
+
+            <button class="btn" onclick="addEntry()" id="addBtn">Add Entry</button>
+            <button class="btn btn-secondary" onclick="clearForm()" id="clearBtn">Clear Form</button>
         </div>
 
         <div class="card stats">
@@ -401,11 +693,39 @@
                 <span class="stat-label">Avg price/gal</span>
                 <span class="stat-value" id="avgPrice">-</span>
             </div>
+            <div id="records" hidden>
+                <p class="records-title">All-time</p>
+                <div class="stat-row">
+                    <span class="stat-label">Best tank</span>
+                    <span class="stat-value" id="bestMPG">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Worst tank</span>
+                    <span class="stat-value" id="worstMPG">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Highest price</span>
+                    <span class="stat-value" id="highPrice">-</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Lowest price</span>
+                    <span class="stat-value" id="lowPrice">-</span>
+                </div>
+            </div>
             <div class="last-mpg" id="lastMPG"></div>
+            <p class="suspect-note" id="suspectNote" hidden></p>
             <button class="btn btn-secondary" onclick="toggleCharts()" id="showChartsBtn">Show Charts</button>
         </div>
 
         <div class="card" id="chartsSection" hidden>
+            <div class="chart-controls">
+                <div class="range-chips" id="rangeChips"></div>
+                <div class="pan">
+                    <button id="panPrev" onclick="panCharts(-1)" aria-label="Earlier">‹</button>
+                    <span class="range-label" id="rangeLabel"></span>
+                    <button id="panNext" onclick="panCharts(1)" aria-label="Later">›</button>
+                </div>
+            </div>
             <div class="chart-container">
                 <div class="chart-title">MPG over time</div>
                 <div class="chart-box"><canvas id="mpgChart"></canvas></div>
@@ -430,11 +750,11 @@
 
         <div class="card">
             <h2>Backup</h2>
-            <p class="note">Your entries live only on this device, nowhere else. Save a backup now and then (to iCloud Drive, Files, email, wherever) so a new phone or a cleared browser doesn't take them with it.</p>
+            <p class="note">Your entries live only on this device, nowhere else. Save a backup now and then (to iCloud Drive, Files, email, wherever) so a new phone or a cleared browser doesn't take them with it. One backup holds all your vehicles.</p>
             <p class="backup-status" id="backupStatus"></p>
             <button class="btn" onclick="exportData()">Save Backup</button>
             <button class="btn btn-secondary" onclick="importData()">Restore From Backup</button>
-            <button class="btn btn-danger" onclick="clearAllData()">Delete all entries</button>
+            <button class="btn btn-danger" onclick="clearAllData()">Delete all entries for this vehicle</button>
             <input type="file" id="importFile" hidden accept=".json,application/json" onchange="handleImport(event)">
         </div>
 
@@ -446,9 +766,71 @@
     <script src="chart.min.js"></script>
     <script>
         const STORAGE_KEY = 'gasBrotherData';
+        const VEHICLES_KEY = 'gasBrotherVehicles';
+        const CURRENT_KEY = 'gasBrotherCurrentVehicle';
         const BACKUP_KEY = 'gasBrotherLastBackup';
         const HINT_KEY = 'gasBrotherHideInstallHint';
         const RECENT_COUNT = 10;
+
+        // A tank this far from the vehicle's typical MPG probably hides an unlogged fill-up
+        // (or a typo). Only judged once there are enough tanks to know what "typical" is.
+        const MIN_TANKS_TO_JUDGE = 5;
+        const SUSPECT_HIGH = 1.45;
+        const SUSPECT_LOW = 0.55;
+
+        const VEHICLE_COLORS = {
+            silver: '#b4b2aa',
+            black: '#2c2416',
+            white: '#fbf9f2',
+            green: '#3d5a42',
+            red: '#9e3b2c',
+            blue: '#2c4a70'
+        };
+
+        const VEHICLE_TYPES = ['pickup', 'sedan', 'suv', 'motorcycle'];
+        const TYPE_NAMES = { pickup: 'Pickup', sedan: 'Sedan', suv: 'SUV', motorcycle: 'Motorcycle' };
+
+        // ---- Vehicle tiles ----
+
+        // Side-view silhouettes facing right, drawn on a 64x64 tile
+        function vehicleArt(type, color) {
+            const ink = '#2c2416';
+            const glass = '#d8d0bd';
+            const wheel = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${ink}"/><circle cx="${x}" cy="${y}" r="${r * 0.38}" fill="${glass}"/>`;
+            const body = d => `<path d="${d}" fill="${color}" stroke="${ink}" stroke-width="1.3" stroke-linejoin="round"/>`;
+            const win = d => `<path d="${d}" fill="${glass}" stroke="${ink}" stroke-width="0.8" stroke-linejoin="round"/>`;
+
+            if (type === 'pickup') {
+                return body('M9 31 H29 V23 Q29 21 31 21 H40 L46 30 H52 Q55.5 30 55.5 33.5 V41 H9 Z') +
+                    win('M32 24 H39.4 L43.8 30 H32 Z') + wheel(19, 41.5, 5) + wheel(46, 41.5, 5);
+            }
+            if (type === 'sedan') {
+                return body('M8 40.5 V35.5 Q8 32.5 11 32 L19.5 31 L25 24.5 Q26 23.5 28 23.5 H39.5 Q41.5 23.5 42.5 24.8 L48.5 31 L53.5 32 Q56 32.8 56 35.5 V40.5 Z') +
+                    win('M27 26 H33.6 V31 H22.6 Z') + win('M35.6 26 H40.4 L45.2 31 H35.6 Z') + wheel(19, 41, 4.6) + wheel(45.5, 41, 4.6);
+            }
+            if (type === 'suv') {
+                return body('M8.5 40.5 V30 Q8.5 27.5 10 26.8 L14 20.8 Q15 19.5 17 19.5 H37.5 Q39.5 19.5 40.8 20.8 L46.5 27 L53 28.3 Q56 29 56 32 V40.5 Z') +
+                    win('M16.6 22 H24.4 V27 H13.2 Z') + win('M26.4 22 H33 V27 H26.4 Z') + win('M35 22 H38.2 L42.8 27 H35 Z') + wheel(19, 40.8, 5) + wheel(46, 40.8, 5);
+            }
+            // motorcycle
+            return `<path d="M17 41 L29 35 M44.5 24 L47 41 M41.5 23.5 L46.5 21.5" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>` +
+                `<circle cx="17" cy="41" r="7" fill="${ink}"/><circle cx="17" cy="41" r="4.6" fill="#f7f3e9"/><circle cx="17" cy="41" r="1.6" fill="${ink}"/>` +
+                `<circle cx="47" cy="41" r="7" fill="${ink}"/><circle cx="47" cy="41" r="4.6" fill="#f7f3e9"/><circle cx="47" cy="41" r="1.6" fill="${ink}"/>` +
+                `<rect x="27" y="32.5" width="10" height="6.5" rx="1.2" fill="${ink}"/>` +
+                `<path d="M16.5 28.5 H27.5 V31 H18 Z" fill="${ink}"/>` +
+                body('M26 31 Q27.5 26 33.5 26 H39 Q41.5 26 41 28.5 L39.5 32.5 H27 Z') +
+                `<circle cx="45.6" cy="27.6" r="1.7" fill="${color}" stroke="${ink}" stroke-width="0.8"/>`;
+        }
+
+        function vehicleSVG(type, color) {
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" aria-hidden="true">` +
+                `<rect x="2" y="2" width="60" height="60" rx="10" fill="#f7f3e9" stroke="#4a3f2f" stroke-width="2.5"/>` +
+                `<rect x="6.5" y="6.5" width="51" height="51" rx="7" fill="none" stroke="#8b7759" stroke-width="1"/>` +
+                `<g fill="#3d5a42"><circle cx="11.5" cy="11.5" r="1.4"/><circle cx="52.5" cy="11.5" r="1.4"/><circle cx="11.5" cy="52.5" r="1.4"/><circle cx="52.5" cy="52.5" r="1.4"/></g>` +
+                `<g transform="translate(32 33) scale(${type === 'motorcycle' ? 1.06 : 0.9}) translate(-32 -32)">${vehicleArt(type, VEHICLE_COLORS[color])}</g></svg>`;
+        }
+
+        // ---- Storage ----
 
         // Local-time YYYY-MM-DD (toISOString would give tomorrow's date on a US evening)
         function todayString() {
@@ -466,15 +848,60 @@
         }
 
         function save() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(gasEntries));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(allEntries));
+            localStorage.setItem(VEHICLES_KEY, JSON.stringify(vehicles));
+            localStorage.setItem(CURRENT_KEY, JSON.stringify(currentId));
+        }
+
+        function newId(prefix) {
+            return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+        }
+
+        function isSafeId(id) {
+            return typeof id === 'string' && /^[\w-]{1,40}$/.test(id);
+        }
+
+        function escapeHTML(text) {
+            return String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
         }
 
         function sortEntries() {
-            gasEntries.sort((a, b) => a.date.localeCompare(b.date) || (a.odometer || 0) - (b.odometer || 0));
+            allEntries.sort((a, b) => a.date.localeCompare(b.date) || (a.odometer || 0) - (b.odometer || 0));
         }
 
-        let gasEntries = load(STORAGE_KEY, []);
+        let allEntries = load(STORAGE_KEY, []);
+        let vehicles = load(VEHICLES_KEY, []);
+        let currentId = load(CURRENT_KEY, null);
         let showAll = false;
+        let editingId = null;
+        let editingEntryId = null;
+        let chartMonths = 6;    // null = all time
+        let chartEnd = null;    // end of the chart window (YYYY-MM-DD); null = latest entry
+        let draft = null;
+
+        // First launch, or data from before vehicles existed: make sure there's a vehicle
+        // and that every entry belongs to one.
+        const isNewUser = vehicles.length === 0 && allEntries.length === 0;
+        if (vehicles.length === 0) {
+            vehicles.push({ id: newId('v'), name: 'My Vehicle', type: 'sedan', color: 'silver' });
+        }
+        allEntries.forEach(entry => {
+            if (!entry.id) entry.id = newId('e');
+            if (!vehicles.some(v => v.id === entry.vehicleId)) entry.vehicleId = vehicles[0].id;
+        });
+        if (!vehicles.some(v => v.id === currentId)) currentId = vehicles[0].id;
+        sortEntries();
+        save();
+
+        function currentVehicle() {
+            return vehicles.find(v => v.id === currentId);
+        }
+
+        function vehicleEntries(id = currentId) {
+            return allEntries.filter(e => e.vehicleId === id);
+        }
+
+        // ---- Entries ----
 
         document.getElementById('date').value = todayString();
 
@@ -484,20 +911,29 @@
             const gallons = parseFloat(document.getElementById('gallons').value);
             const odometer = parseInt(document.getElementById('odometer').value);
             const partial = document.getElementById('partial').checked;
+            const missed = document.getElementById('missed').checked;
 
             if (!date || !cost || !gallons) {
                 alert('Please fill in date, cost, and gallons');
                 return;
             }
 
-            gasEntries.push({
-                date,
-                cost,
-                gallons,
-                odometer: odometer || null,
-                partial,
-                timestamp: Date.now()
-            });
+            const editing = editingEntryId && findEntry(editingEntryId);
+            if (editing) {
+                Object.assign(editing, { date, cost, gallons, odometer: odometer || null, partial, missed });
+            } else {
+                allEntries.push({
+                    id: newId('e'),
+                    vehicleId: currentId,
+                    date,
+                    cost,
+                    gallons,
+                    odometer: odometer || null,
+                    partial,
+                    missed,
+                    timestamp: Date.now()
+                });
+            }
             sortEntries();
             save();
 
@@ -510,31 +946,120 @@
             document.getElementById('gallons').value = '';
             document.getElementById('odometer').value = '';
             document.getElementById('partial').checked = false;
+            document.getElementById('missed').checked = false;
             document.getElementById('date').value = todayString();
+
+            editingEntryId = null;
+            document.getElementById('editingNote').hidden = true;
+            setText('addBtn', 'Add Entry');
+            setText('clearBtn', 'Clear Form');
         }
 
-        function deleteEntry(index) {
+        function startEdit(id) {
+            const entry = findEntry(id);
+            editingEntryId = id;
+            document.getElementById('date').value = entry.date;
+            document.getElementById('cost').value = entry.cost;
+            document.getElementById('gallons').value = entry.gallons;
+            document.getElementById('odometer').value = entry.odometer || '';
+            document.getElementById('partial').checked = entry.partial;
+            document.getElementById('missed').checked = Boolean(entry.missed);
+
+            const note = document.getElementById('editingNote');
+            note.textContent = `Editing the ${formatDateLong(entry.date)} entry`;
+            note.hidden = false;
+            setText('addBtn', 'Save Changes');
+            setText('clearBtn', 'Cancel Edit');
+            document.getElementById('entryForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function findEntry(id) {
+            return allEntries.find(e => e.id === id);
+        }
+
+        function deleteEntry(id) {
             if (confirm('Delete this entry?')) {
-                gasEntries.splice(index, 1);
+                allEntries = allEntries.filter(e => e.id !== id);
+                if (id === editingEntryId) clearForm();
                 save();
                 updateDisplay();
             }
         }
 
+        function markMissed(id) {
+            findEntry(id).missed = true;
+            save();
+            updateDisplay();
+        }
+
+        function markOk(id) {
+            findEntry(id).mpgOk = true;
+            save();
+            updateDisplay();
+        }
+
         function clearAllData() {
-            if (confirm('Delete ALL entries? This cannot be undone. Save a backup first if you might want them.')) {
-                gasEntries = [];
+            const vehicle = currentVehicle();
+            if (confirm(`Delete ALL entries for ${vehicle.name}? This cannot be undone. Save a backup first if you might want them.`)) {
+                allEntries = allEntries.filter(e => e.vehicleId !== currentId);
                 save();
                 updateDisplay();
             }
         }
 
         function updateDisplay() {
+            renderVehicleBar();
             updateStats();
             updateEntriesList();
             updateCharts();
             updateBackupStatus();
         }
+
+        // ---- MPG ----
+
+        function median(values) {
+            const sorted = values.slice().sort((a, b) => a - b);
+            const mid = Math.floor(sorted.length / 2);
+            return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        }
+
+        // MPG per tank, full fill to full fill. Gallons from any partial fills in between count
+        // toward the tank, since that gas was burned over the same miles. An entry marked
+        // "missed" means an unlogged fill-up happened before it, so that one tank is skipped.
+        // Tanks far from the typical MPG are flagged as suspect and left out until checked.
+        function analyzeTanks(entries) {
+            const tanks = [];
+            let lastFull = null;
+            let gallons = 0;
+            let broken = false;
+
+            entries.forEach(entry => {
+                gallons += entry.gallons;
+                if (entry.missed) broken = true;
+                if (entry.partial || !entry.odometer) return;
+                if (lastFull && !broken) {
+                    const miles = entry.odometer - lastFull.odometer;
+                    tanks.push({ entry, date: entry.date, miles, gallons, mpg: parseFloat((miles / gallons).toFixed(1)) });
+                }
+                lastFull = entry;
+                gallons = 0;
+                broken = false;
+            });
+
+            const typical = tanks.length >= MIN_TANKS_TO_JUDGE ? median(tanks.map(t => t.mpg)) : null;
+            tanks.forEach(tank => {
+                tank.suspect = typical !== null && !tank.entry.mpgOk &&
+                    (tank.mpg > typical * SUSPECT_HIGH || tank.mpg < typical * SUSPECT_LOW);
+            });
+
+            return {
+                good: tanks.filter(t => !t.suspect),
+                suspects: tanks.filter(t => t.suspect),
+                typical
+            };
+        }
+
+        // ---- Charts ----
 
         function toggleCharts() {
             const chartsSection = document.getElementById('chartsSection');
@@ -566,38 +1091,81 @@
             };
         }
 
-        // MPG per tank, full fill to full fill. Gallons from any partial fills in between count
-        // toward the tank, since that gas was burned over the same miles.
-        function tankMPGs() {
-            const tanks = [];
-            let lastFull = null;
-            let gallons = 0;
+        const RANGES = [['3M', 3], ['6M', 6], ['1Y', 12], ['All', null]];
 
-            gasEntries.forEach(entry => {
-                gallons += entry.gallons;
-                if (entry.partial || !entry.odometer) return;
-                if (lastFull) {
-                    const miles = entry.odometer - lastFull.odometer;
-                    tanks.push({ date: entry.date, miles, gallons, mpg: parseFloat((miles / gallons).toFixed(1)) });
-                }
-                lastFull = entry;
-                gallons = 0;
-            });
-            return tanks;
+        function addMonths(dateStr, months) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const date = new Date(y, m - 1 + months, d);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        // The slice of time all three charts show: the last N months up to chartEnd
+        function chartWindow(entries) {
+            const first = entries[0].date;
+            const last = entries[entries.length - 1].date;
+            if (chartMonths === null) return { start: first, end: last, first, last };
+
+            let end = chartEnd && chartEnd < last ? chartEnd : last;
+            if (addMonths(end, -chartMonths) < first) end = addMonths(first, chartMonths) < last ? addMonths(first, chartMonths) : last;
+            return { start: addMonths(end, -chartMonths), end, first, last };
+        }
+
+        function setRange(months) {
+            chartMonths = months;
+            updateCharts();
+        }
+
+        function panCharts(direction) {
+            const entries = vehicleEntries();
+            if (!entries.length || chartMonths === null) return;
+            const { end, last } = chartWindow(entries);
+            const newEnd = addMonths(end, direction * chartMonths);
+            chartEnd = newEnd >= last ? null : newEnd;
+            updateCharts();
+        }
+
+        function formatMonthYear(dateStr) {
+            const [y, m] = dateStr.split('-').map(Number);
+            return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+        }
+
+        function updateChartControls(win) {
+            document.getElementById('rangeChips').innerHTML = RANGES.map(([label, months]) =>
+                `<button class="chip${months === chartMonths ? ' selected' : ''}" onclick="setRange(${months})">${label}</button>`
+            ).join('');
+            const prev = document.getElementById('panPrev');
+            const next = document.getElementById('panNext');
+            if (!win) {
+                setText('rangeLabel', '');
+                prev.disabled = next.disabled = true;
+                return;
+            }
+            setText('rangeLabel', `${formatMonthYear(win.start < win.first ? win.first : win.start)} – ${formatMonthYear(win.end)}`);
+            prev.disabled = chartMonths === null || win.start <= win.first;
+            next.disabled = chartMonths === null || win.end >= win.last;
         }
 
         function updateCharts() {
             if (document.getElementById('chartsSection').hidden || !window.Chart) return;
 
-            const mpgData = tankMPGs();
+            const allVehicleEntries = vehicleEntries();
+            const win = allVehicleEntries.length ? chartWindow(allVehicleEntries) : null;
+            updateChartControls(win);
+            const inWindow = date => win && date >= win.start && date <= win.end;
+
+            const entries = allVehicleEntries.filter(e => inWindow(e.date));
+            const mpgData = analyzeTanks(allVehicleEntries).good.filter(t => inWindow(t.date));
             const monthlyMiles = {};
 
-            mpgData.forEach(tank => {
-                const month = tank.date.substring(0, 7);
-                monthlyMiles[month] = (monthlyMiles[month] || 0) + tank.miles;
-            });
+            // Every odometer reading counts here, including across missed fill-ups
+            const entriesWithOdo = allVehicleEntries.filter(e => e.odometer);
+            for (let i = 1; i < entriesWithOdo.length; i++) {
+                if (!inWindow(entriesWithOdo[i].date)) continue;
+                const month = entriesWithOdo[i].date.substring(0, 7);
+                monthlyMiles[month] = (monthlyMiles[month] || 0) + entriesWithOdo[i].odometer - entriesWithOdo[i - 1].odometer;
+            }
 
-            const priceData = gasEntries.map(entry => ({
+            const priceData = entries.map(entry => ({
                 date: entry.date,
                 price: parseFloat((entry.cost / entry.gallons).toFixed(3))
             }));
@@ -664,18 +1232,25 @@
             return new Date(y, m - 1, d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
         }
 
+        // ---- Stats & entry list ----
+
         function setText(id, text) {
             document.getElementById(id).textContent = text;
         }
 
         function updateStats() {
+            const entries = vehicleEntries();
+            const note = document.getElementById('suspectNote');
+
             ['totalSpent', 'totalGallons', 'avgPrice', 'totalMiles', 'overallMPG'].forEach(id => setText(id, '-'));
             setText('lastMPG', '');
-            if (gasEntries.length === 0) return;
+            note.hidden = true;
+            document.getElementById('records').hidden = true;
+            if (entries.length === 0) return;
 
-            const totalSpent = gasEntries.reduce((sum, entry) => sum + entry.cost, 0);
-            const totalGallons = gasEntries.reduce((sum, entry) => sum + entry.gallons, 0);
-            const entriesWithOdo = gasEntries.filter(e => e.odometer);
+            const totalSpent = entries.reduce((sum, entry) => sum + entry.cost, 0);
+            const totalGallons = entries.reduce((sum, entry) => sum + entry.gallons, 0);
+            const entriesWithOdo = entries.filter(e => e.odometer);
 
             setText('totalSpent', `$${totalSpent.toFixed(2)}`);
             setText('totalGallons', totalGallons.toFixed(1));
@@ -683,16 +1258,46 @@
 
             if (entriesWithOdo.length >= 2) {
                 const totalMiles = entriesWithOdo[entriesWithOdo.length - 1].odometer - entriesWithOdo[0].odometer;
-                const gallonsUsed = entriesWithOdo.slice(1).reduce((sum, entry) => sum + entry.gallons, 0);
-
                 setText('totalMiles', totalMiles.toLocaleString());
-                setText('overallMPG', (totalMiles / gallonsUsed).toFixed(1));
-
-                const tanks = tankMPGs();
-                if (tanks.length) {
-                    setText('lastMPG', `Last tank: ${tanks[tanks.length - 1].mpg.toFixed(1)} MPG`);
-                }
             }
+
+            // Overall MPG from complete, believable tanks only
+            const { good, suspects } = analyzeTanks(entries);
+            const records = document.getElementById('records');
+            records.hidden = false;
+            const recordHTML = (value, date) => `${value}<small>${formatDateLong(date)}</small>`;
+            const byPrice = entries.map(e => ({ date: e.date, price: e.cost / e.gallons })).sort((a, b) => a.price - b.price);
+            document.getElementById('lowPrice').innerHTML = recordHTML(`$${byPrice[0].price.toFixed(3)}`, byPrice[0].date);
+            document.getElementById('highPrice').innerHTML = recordHTML(`$${byPrice[byPrice.length - 1].price.toFixed(3)}`, byPrice[byPrice.length - 1].date);
+            if (good.length) {
+                const byMPG = good.slice().sort((a, b) => a.mpg - b.mpg);
+                document.getElementById('worstMPG').innerHTML = recordHTML(`${byMPG[0].mpg.toFixed(1)} MPG`, byMPG[0].date);
+                document.getElementById('bestMPG').innerHTML = recordHTML(`${byMPG[byMPG.length - 1].mpg.toFixed(1)} MPG`, byMPG[byMPG.length - 1].date);
+            } else {
+                setText('worstMPG', '-');
+                setText('bestMPG', '-');
+            }
+
+            if (good.length) {
+                const tankMiles = good.reduce((sum, tank) => sum + tank.miles, 0);
+                const tankGallons = good.reduce((sum, tank) => sum + tank.gallons, 0);
+                setText('overallMPG', (tankMiles / tankGallons).toFixed(1));
+                setText('lastMPG', `Last tank: ${good[good.length - 1].mpg.toFixed(1)} MPG`);
+            }
+
+            if (suspects.length) {
+                const one = suspects.length === 1;
+                note.innerHTML = `${suspects.length} tank${one ? '' : 's'} look${one ? 's' : ''} way off, probably from a fill-up that didn't get logged. ` +
+                    `${one ? "It's" : "They're"} left out of MPG until you check. <button class="link-btn" onclick="reviewSuspects()">Review</button>`;
+                note.hidden = false;
+            }
+        }
+
+        function reviewSuspects() {
+            showAll = true;
+            updateEntriesList();
+            const first = document.querySelector('.suspect');
+            if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function toggleShowAll() {
@@ -701,23 +1306,32 @@
         }
 
         function updateEntriesList() {
+            const entries = vehicleEntries();
             const list = document.getElementById('entriesList');
             const showAllBtn = document.getElementById('showAllBtn');
 
-            showAllBtn.hidden = gasEntries.length <= RECENT_COUNT;
-            showAllBtn.textContent = showAll ? 'Show recent only' : `Show all ${gasEntries.length} entries`;
+            showAllBtn.hidden = entries.length <= RECENT_COUNT;
+            showAllBtn.textContent = showAll ? 'Show recent only' : `Show all ${entries.length} entries`;
 
-            if (gasEntries.length === 0) {
+            if (entries.length === 0) {
                 list.innerHTML = '<p class="empty">No entries yet</p>';
                 return;
             }
 
-            const shown = (showAll ? gasEntries : gasEntries.slice(-RECENT_COUNT)).slice().reverse();
+            const { suspects, typical } = analyzeTanks(entries);
+            const suspectById = new Map(suspects.map(t => [t.entry.id, t]));
+            const shown = (showAll ? entries : entries.slice(-RECENT_COUNT)).slice().reverse();
 
-            list.innerHTML = shown.map((entry, index) => {
-                const actualIndex = gasEntries.length - 1 - index;
+            list.innerHTML = shown.map(entry => {
                 const pricePerGal = (entry.cost / entry.gallons).toFixed(3);
                 const partialText = entry.partial ? '<span class="partial-indicator">partial</span> · ' : '';
+                const missedText = entry.missed ? '<br><span class="entry-details">after a missed fill-up</span>' : '';
+                const suspect = suspectById.get(entry.id);
+                const suspectText = suspect ? `
+                    <div class="suspect">
+                        ${suspect.mpg} MPG on this tank, way off the usual ${typical.toFixed(1)}. Did you miss logging a fill-up before this one?<br>
+                        <button class="small-btn" onclick="markMissed('${entry.id}')">Yes, missed one</button><button class="small-btn" onclick="markOk('${entry.id}')">No, it's right</button>
+                    </div>` : '';
 
                 return `
                     <div class="entry">
@@ -725,11 +1339,140 @@
                             <span class="entry-date">${formatDateLong(entry.date)}</span><br>
                             <span class="entry-details">${partialText}$${entry.cost.toFixed(2)} · ${entry.gallons.toFixed(1)} gal · $${pricePerGal}/gal</span>
                             ${entry.odometer ? `<br><span class="entry-details">${entry.odometer.toLocaleString()} mi</span>` : ''}
+                            ${missedText}
+                            ${suspectText}
                         </div>
-                        <button class="delete-btn" onclick="deleteEntry(${actualIndex})" aria-label="Delete entry">×</button>
+                        <div class="entry-actions">
+                            <button class="edit-btn" onclick="startEdit('${entry.id}')">edit</button>
+                            <button class="delete-btn" onclick="deleteEntry('${entry.id}')" aria-label="Delete entry">×</button>
+                        </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        // Swipe the charts left/right to move through time
+        (function () {
+            const charts = document.getElementById('chartsSection');
+            let startX = 0;
+            let startY = 0;
+            charts.addEventListener('touchstart', e => {
+                startX = e.changedTouches[0].screenX;
+                startY = e.changedTouches[0].screenY;
+            }, { passive: true });
+            charts.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].screenX - startX;
+                const dy = e.changedTouches[0].screenY - startY;
+                if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) panCharts(dx < 0 ? 1 : -1);
+            }, { passive: true });
+        })();
+
+        // ---- Vehicles ----
+
+        function renderVehicleBar() {
+            const vehicle = currentVehicle();
+            document.getElementById('currentVehicleTile').innerHTML = vehicleSVG(vehicle.type, vehicle.color);
+            setText('currentVehicleName', vehicle.name);
+        }
+
+        function toggleGarage() {
+            const garage = document.getElementById('garage');
+            garage.hidden = !garage.hidden;
+            document.getElementById('vehicleEditor').hidden = true;
+            renderGarage();
+        }
+
+        function renderGarage() {
+            document.getElementById('garageList').innerHTML = vehicles.map(vehicle => {
+                const count = vehicleEntries(vehicle.id).length;
+                return `
+                    <div class="vehicle-row${vehicle.id === currentId ? ' current' : ''}">
+                        <button class="vehicle-select" onclick="selectVehicle('${vehicle.id}')">
+                            <span class="vehicle-tile">${vehicleSVG(vehicle.type, vehicle.color)}</span>
+                            <span>${escapeHTML(vehicle.name)}<small>${count} entr${count === 1 ? 'y' : 'ies'}</small></span>
+                        </button>
+                        <button class="small-btn" onclick="editVehicle('${vehicle.id}')">Edit</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function selectVehicle(id) {
+            currentId = id;
+            showAll = false;
+            chartEnd = null;
+            clearForm();
+            save();
+            document.getElementById('garage').hidden = true;
+            updateDisplay();
+        }
+
+        function editVehicle(id) {
+            editingId = id;
+            const vehicle = vehicles.find(v => v.id === id);
+            draft = vehicle ? { ...vehicle } : { name: '', type: 'pickup', color: 'silver' };
+
+            setText('editorTitle', vehicle ? 'Edit Vehicle' : 'Add a Vehicle');
+            document.getElementById('vehicleName').value = draft.name;
+            document.getElementById('deleteVehicleBtn').hidden = !vehicle || vehicles.length < 2;
+            renderPickers();
+
+            document.getElementById('garage').hidden = true;
+            const editor = document.getElementById('vehicleEditor');
+            editor.hidden = false;
+            editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function renderPickers() {
+            document.getElementById('typePicker').innerHTML = VEHICLE_TYPES.map(type => `
+                <button class="${type === draft.type ? 'selected' : ''}" onclick="pickType('${type}')" aria-label="${TYPE_NAMES[type]}" title="${TYPE_NAMES[type]}">${vehicleSVG(type, draft.color)}</button>
+            `).join('');
+            document.getElementById('colorPicker').innerHTML = Object.keys(VEHICLE_COLORS).map(color => `
+                <button class="swatch${color === draft.color ? ' selected' : ''}" style="background: ${VEHICLE_COLORS[color]}" onclick="pickColor('${color}')" aria-label="${color}" title="${color}"></button>
+            `).join('');
+        }
+
+        function pickType(type) {
+            draft.type = type;
+            renderPickers();
+        }
+
+        function pickColor(color) {
+            draft.color = color;
+            renderPickers();
+        }
+
+        function saveVehicle() {
+            const name = document.getElementById('vehicleName').value.trim() || TYPE_NAMES[draft.type];
+
+            if (editingId) {
+                Object.assign(vehicles.find(v => v.id === editingId), { name, type: draft.type, color: draft.color });
+            } else {
+                const vehicle = { id: newId('v'), name, type: draft.type, color: draft.color };
+                vehicles.push(vehicle);
+                currentId = vehicle.id;
+                showAll = false;
+            }
+            save();
+            closeEditor();
+            updateDisplay();
+        }
+
+        function closeEditor() {
+            document.getElementById('vehicleEditor').hidden = true;
+        }
+
+        function deleteVehicle() {
+            const vehicle = vehicles.find(v => v.id === editingId);
+            const count = vehicleEntries(editingId).length;
+            if (!confirm(`Delete ${vehicle.name} and its ${count} entries? This cannot be undone.`)) return;
+
+            vehicles = vehicles.filter(v => v.id !== editingId);
+            allEntries = allEntries.filter(e => e.vehicleId !== editingId);
+            if (currentId === editingId) currentId = vehicles[0].id;
+            save();
+            closeEditor();
+            updateDisplay();
         }
 
         // ---- Backup ----
@@ -738,7 +1481,7 @@
             const status = document.getElementById('backupStatus');
             const last = load(BACKUP_KEY, null);
 
-            if (gasEntries.length === 0) {
+            if (allEntries.length === 0) {
                 status.textContent = '';
                 status.classList.remove('stale');
                 return;
@@ -758,9 +1501,10 @@
         async function exportData() {
             const backup = {
                 app: 'gas-brother',
-                version: 1,
+                version: 2,
                 exported: new Date().toISOString(),
-                entries: gasEntries
+                vehicles,
+                entries: allEntries
             };
             const filename = `gas-brother-backup-${todayString()}.json`;
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -795,20 +1539,35 @@
             document.getElementById('importFile').click();
         }
 
-        // Accepts new backups ({ entries: [...] }) and old Gas Tracker exports (a bare array)
-        function cleanEntries(data) {
-            const raw = Array.isArray(data) ? data : (data && Array.isArray(data.entries) ? data.entries : null);
-            if (!raw) return null;
+        // Reads current backups ({ vehicles, entries }), version 1 backups ({ entries }), and
+        // old Gas Tracker exports (a bare array). Entries with no known vehicle go to the current one.
+        function cleanBackup(data) {
+            const rawEntries = Array.isArray(data) ? data : (data && Array.isArray(data.entries) ? data.entries : null);
+            if (!rawEntries) return null;
 
-            return raw.filter(e => e && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && Number(e.cost) > 0 && Number(e.gallons) > 0)
+            const rawVehicles = data && Array.isArray(data.vehicles) ? data.vehicles : [];
+            const backupVehicles = rawVehicles.filter(v => v && isSafeId(v.id)).map(v => ({
+                id: v.id,
+                name: String(v.name || 'Vehicle').slice(0, 30),
+                type: VEHICLE_TYPES.includes(v.type) ? v.type : 'sedan',
+                color: VEHICLE_COLORS[v.color] ? v.color : 'silver'
+            }));
+
+            const entries = rawEntries.filter(e => e && /^\d{4}-\d{2}-\d{2}$/.test(e.date) && Number(e.cost) > 0 && Number(e.gallons) > 0)
                 .map(e => ({
+                    id: isSafeId(e.id) ? e.id : newId('e'),
+                    vehicleId: isSafeId(e.vehicleId) ? e.vehicleId : null,
                     date: e.date,
                     cost: Number(e.cost),
                     gallons: Number(e.gallons),
                     odometer: parseInt(e.odometer) || null,
                     partial: Boolean(e.partial),
+                    missed: Boolean(e.missed),
+                    mpgOk: Boolean(e.mpgOk),
                     timestamp: Number(e.timestamp) || null
                 }));
+
+            return { vehicles: backupVehicles, entries };
         }
 
         function handleImport(event) {
@@ -817,23 +1576,36 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                let imported;
+                let backup;
                 try {
-                    imported = cleanEntries(JSON.parse(e.target.result));
+                    backup = cleanBackup(JSON.parse(e.target.result));
                 } catch (err) {
                     alert('Could not read that file: ' + err.message);
                     return;
                 }
-                if (!imported) {
+                if (!backup) {
                     alert("That doesn't look like a Gas Brother backup.");
                     return;
                 }
-                if (!confirm(`Restore ${imported.length} entries? They'll be merged with what's already here (duplicates are skipped).`)) return;
+
+                const newVehicles = backup.vehicles.filter(v => !vehicles.some(existing => existing.id === v.id));
+                const knownIds = new Set([...vehicles, ...backup.vehicles].map(v => v.id));
+                const intoCurrent = backup.entries.filter(e => !knownIds.has(e.vehicleId)).length;
+
+                let question = `Restore ${backup.entries.length} entries`;
+                if (newVehicles.length) question += ` and ${newVehicles.length} vehicle${newVehicles.length === 1 ? '' : 's'}`;
+                if (intoCurrent === backup.entries.length) question += ` into ${currentVehicle().name}`;
+                if (!confirm(question + "? They'll be merged with what's already here (duplicates are skipped).")) return;
+
+                vehicles.push(...newVehicles);
+                backup.entries.forEach(entry => {
+                    if (!knownIds.has(entry.vehicleId)) entry.vehicleId = currentId;
+                });
 
                 const seen = new Set();
-                const before = gasEntries.length;
-                gasEntries = [...gasEntries, ...imported].filter(entry => {
-                    const key = `${entry.date}|${entry.cost}|${entry.gallons}|${entry.odometer}`;
+                const before = allEntries.length;
+                allEntries = [...allEntries, ...backup.entries].filter(entry => {
+                    const key = `${entry.vehicleId}|${entry.date}|${entry.cost}|${entry.gallons}|${entry.odometer}`;
                     if (seen.has(key)) return false;
                     seen.add(key);
                     return true;
@@ -841,7 +1613,7 @@
                 sortEntries();
                 save();
                 updateDisplay();
-                alert(`Added ${gasEntries.length - before} new entries.`);
+                alert(`Added ${allEntries.length - before} new entries.`);
             };
             reader.readAsText(file);
             event.target.value = '';
@@ -868,11 +1640,19 @@
             navigator.storage.persist();
         }
 
-        if ('serviceWorker' in navigator) {
+        // Skipped on localhost so local edits show up right away
+        if ('serviceWorker' in navigator && location.hostname !== 'localhost') {
             navigator.serviceWorker.register('sw.js');
         }
 
         updateDisplay();
+
+        // New here: start by naming the first vehicle
+        if (isNewUser) {
+            editVehicle(currentId);
+            setText('editorTitle', 'Your Vehicle');
+            document.getElementById('vehicleName').value = '';
+        }
     </script>
 </body>
 </html>
