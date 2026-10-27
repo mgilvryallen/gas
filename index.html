@@ -48,6 +48,16 @@
             box-sizing: border-box;
         }
 
+
+        /* Rebalance lines so text never ends on one lonely word, and headings break evenly */
+        p, label, li, .note, .suspect, .stovetop {
+            text-wrap: pretty;
+        }
+
+        h1, h2, h3 {
+            text-wrap: balance;
+        }
+
         body {
             font-family: 'Lumios Typewriter', Georgia, serif;
             font-size: 17px;
@@ -702,7 +712,7 @@
 
             <div class="checkbox-group">
                 <input type="checkbox" id="missed">
-                <label for="missed">Missed logging a fill-up before this one</label>
+                <label for="missed">Missed logging a fill-up before this</label>
             </div>
 
             <button class="btn" onclick="addEntry()" id="addBtn">Add Entry</button>
@@ -795,7 +805,7 @@
                 <button class="btn" onclick="toggleSyncSetup()">Sync Across Devices</button>
                 <div id="syncSetup" hidden>
                     <ol class="sync-steps">
-                        <li>No GitHub account? <a href="https://github.com/signup" target="_blank">Make one</a> (free).</li>
+                        <li>No GitHub account? <a href="https://github.com/signup" target="_blank">Make one</a>.</li>
                         <li><a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Gas%20app%20sync" target="_blank">Make a token</a>. It's already filled in: set <b>Expiration</b> to <b>No expiration</b>, then tap <b>Generate token</b> at the bottom.</li>
                         <li>Copy the token (it starts with <code>ghp_</code>) and paste it here. Do the same on each device.</li>
                     </ol>
@@ -821,7 +831,7 @@
         </div>
 
         <div class="credit">
-            Made by <a href="https://mgilvryallen.com" target="_blank">M'Gilvry Allen</a> · <a href="https://github.com/mgilvryallen/gas" target="_blank">make your own copy</a>
+            Made by <a href="https://mgilvryallen.com" target="_blank">M'Gilvry Allen</a><br><a href="https://github.com/mgilvryallen/gas" target="_blank">make your own copy</a>
         </div>
     </div>
 
