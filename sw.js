@@ -1,6 +1,6 @@
 // Offline support: serve the app from cache, refresh the cache in the background.
 // Bump CACHE when files are added or removed.
-const CACHE = 'gas-v2';
+const CACHE = 'gas-v3';
 const FILES = [
     './',
     'index.html',
@@ -21,7 +21,8 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
     event.waitUntil(
-        caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key))))
+        // All the apps share one origin (mgilvryallen.github.io), so only clear this app's old caches
+        caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('gas-') && key !== CACHE).map(key => caches.delete(key))))
     );
     self.clients.claim();
 });
