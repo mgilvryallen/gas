@@ -1,6 +1,6 @@
 // Offline support: the page from the network when it can, everything else from cache.
-// Bump CACHE when files are added or removed.
-const CACHE = 'gas-v5';
+// Bump CACHE when files are added or removed, and on any change phones must pick up now.
+const CACHE = 'gas-v6';
 const FILES = [
     './',
     'index.html',
@@ -36,10 +36,12 @@ self.addEventListener('fetch', event => {
     // (not the one after). Offline, on wifi that goes nowhere, or on a signal too slow to answer
     // in 3s, the cached copy opens. Anything but a straight answer (an error, or a wifi login page
     // redirecting) counts as no answer, so it never replaces the cached copy.
+    // 'no-cache' makes the browser check with GitHub every time instead of reusing its own
+    // ten-minute copy, which otherwise kept showing the old page after a deploy.
     if (event.request.mode === 'navigate') {
         event.respondWith(
             caches.open(CACHE).then(cache => {
-                const fresh = fetch(event.request).then(response => {
+                const fresh = fetch(event.request.url, { cache: 'no-cache', credentials: 'same-origin' }).then(response => {
                     if (!response.ok || response.redirected) throw new Error('not the page');
                     cache.put(event.request, response.clone());
                     return response;
