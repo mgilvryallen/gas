@@ -747,6 +747,10 @@
             margin-top: 0;
         }
 
+        .upkeep-total {
+            margin-top: 6px;
+        }
+
         #partsList .stat-row {
             font-size: 15px;
         }
@@ -960,6 +964,11 @@
                         <input type="text" id="partName" maxlength="40" placeholder="Spark plugs" aria-label="Part name" onkeydown="if (event.key === 'Enter') addPart()">
                         <button class="small-btn" onclick="addPart()">Add</button>
                     </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="serviceCost">Total cost ($)</label>
+                    <input type="number" id="serviceCost" step="0.01" inputmode="decimal" placeholder="optional, everything on this visit">
                 </div>
 
                 <div class="input-group">
@@ -1783,8 +1792,12 @@
             }
 
             const shown = (showAllServices ? services : services.slice(-RECENT_SERVICES)).slice().reverse();
+            const spent = services.reduce((sum, s) => sum + (s.cost || 0), 0);
             list.innerHTML = '<p class="records-title">History</p>' + shown.map(service => {
-                const details = service.odometer ? `${service.odometer.toLocaleString()} mi` : '';
+                const details = [
+                    service.odometer ? `${service.odometer.toLocaleString()} mi` : '',
+                    service.cost ? `$${service.cost.toFixed(2)}` : ''
+                ].filter(Boolean).join(' · ');
                 return `
                     <div class="entry">
                         <div>
@@ -1800,7 +1813,7 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+            }).join('') + (spent ? `<div class="stat-row upkeep-total"><span class="stat-label">Spent on upkeep</span><span class="stat-value">$${spent.toFixed(2)}</span></div>` : '');
         }
 
         function showMaintenance() {
@@ -1919,7 +1932,7 @@
             serviceKind = kind;
             document.getElementById('serviceName').value = name || '';
             document.getElementById('serviceDate').value = todayString();
-            ['serviceOdometer', 'serviceNotes'].forEach(id => document.getElementById(id).value = '');
+            ['serviceOdometer', 'serviceCost', 'serviceNotes'].forEach(id => document.getElementById(id).value = '');
             resetParts([]);
             document.getElementById('serviceEditingNote').hidden = true;
             setText('saveServiceBtn', 'Save Service');
@@ -1939,6 +1952,7 @@
             document.getElementById('serviceName').value = service.name || '';
             document.getElementById('serviceDate').value = service.date;
             document.getElementById('serviceOdometer').value = service.odometer || '';
+            document.getElementById('serviceCost').value = service.cost || '';
             serviceOilMiles = service.everyMiles || SERVICE_KINDS.oil.everyMiles;
             resetParts(service.parts || []);
             document.getElementById('serviceEveryMiles').value = service.everyMiles || '';
@@ -1986,6 +2000,7 @@
                 name,
                 date,
                 odometer: parseInt(value('serviceOdometer')) || null,
+                cost: parseFloat(value('serviceCost')) > 0 ? parseFloat(value('serviceCost')) : null,
                 everyMiles: serviceKind === 'oil' ? serviceOilMiles : serviceKind === 'parts' ? null : number('serviceEveryMiles'),
                 everyMonths: serviceKind === 'parts' ? null : number('serviceEveryMonths'),
                 parts,
