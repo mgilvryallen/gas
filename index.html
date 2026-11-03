@@ -683,11 +683,6 @@
             margin-bottom: 10px;
         }
 
-        .service-kinds {
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
         .interval-row {
             display: flex;
             gap: 10px;
@@ -707,8 +702,53 @@
             margin-top: 18px;
         }
 
-        .upkeep-total {
-            margin-top: 6px;
+        .option-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .option-chips .chip {
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            padding: 6px 10px;
+        }
+
+        .part-when {
+            color: var(--green);
+            text-align: right;
+        }
+
+        #oilIntervalGroup .option-chips {
+            margin-bottom: 0;
+        }
+
+        .part-add {
+            display: flex;
+            gap: 8px;
+            margin: -6px 0 16px;
+        }
+
+        .part-add .small-btn {
+            flex: none;
+            min-height: 44px;
+        }
+
+        #partsList {
+            margin: -6px 0 16px;
+        }
+
+        #partsList:empty {
+            display: none;
+        }
+
+        #partsList .records-title {
+            margin-top: 0;
+        }
+
+        #partsList .stat-row {
+            font-size: 15px;
         }
     </style>
 </head>
@@ -867,11 +907,12 @@
         <div class="card" id="maintenanceCard">
             <h2>Maintenance</h2>
             <div id="dueList"></div>
+            <div id="partsList"></div>
             <button class="btn btn-secondary" id="logServiceBtn" onclick="openServiceForm('oil')">Log Service</button>
 
             <div id="serviceForm" hidden>
                 <p class="editing-note" id="serviceEditingNote" hidden></p>
-                <div class="range-chips service-kinds" id="serviceKinds"></div>
+                <div class="option-chips" id="serviceKinds"></div>
 
                 <div class="input-group" id="serviceNameGroup">
                     <label for="serviceName">What was done</label>
@@ -888,22 +929,38 @@
                     <input type="number" id="serviceOdometer" inputmode="numeric">
                 </div>
 
-                <div class="input-group">
-                    <label for="serviceCost">Cost ($)</label>
-                    <input type="number" id="serviceCost" step="0.01" inputmode="decimal" placeholder="optional">
+                <div class="input-group" id="oilIntervalGroup">
+                    <label>Next one in</label>
+                    <div class="option-chips" id="oilChips"></div>
                 </div>
 
-                <div class="interval-row">
-                    <div class="input-group">
-                        <label for="serviceEveryMiles">Next in (miles)</label>
-                        <input type="number" id="serviceEveryMiles" inputmode="numeric">
+                <div id="intervalGroup">
+                    <div class="interval-row">
+                        <div class="input-group">
+                            <label for="serviceEveryMiles">Next in (miles)</label>
+                            <input type="number" id="serviceEveryMiles" inputmode="numeric">
+                        </div>
+                        <div class="input-group">
+                            <label for="serviceEveryMonths">or (months)</label>
+                            <input type="number" id="serviceEveryMonths" inputmode="numeric">
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label for="serviceEveryMonths">or (months)</label>
-                        <input type="number" id="serviceEveryMonths" inputmode="numeric">
+                    <p class="interval-hint">Whichever comes first. Leave both blank for no reminder.</p>
+                </div>
+
+                <div class="checkbox-group" id="partsToggleGroup">
+                    <input type="checkbox" id="partsToggle" onchange="renderServiceKinds()">
+                    <label for="partsToggle">Replaced parts too</label>
+                </div>
+
+                <div id="partsPicker" hidden>
+                    <label class="picker-label" id="partsPickerLabel">What did you replace?</label>
+                    <div class="option-chips" id="partChips"></div>
+                    <div class="part-add" id="partAdd" hidden>
+                        <input type="text" id="partName" maxlength="40" placeholder="Spark plugs" aria-label="Part name" onkeydown="if (event.key === 'Enter') addPart()">
+                        <button class="small-btn" onclick="addPart()">Add</button>
                     </div>
                 </div>
-                <p class="interval-hint">Whichever comes first. Leave both blank for no reminder.</p>
 
                 <div class="input-group">
                     <label for="serviceNotes">Notes</label>
@@ -975,8 +1032,11 @@
         const SERVICE_KINDS = {
             oil: { name: 'Oil change', chip: 'Oil', everyMiles: 5000, everyMonths: 6 },
             tires: { name: 'Tire rotation', chip: 'Tires', everyMiles: 6000, everyMonths: 6 },
+            parts: { name: 'Parts replaced', chip: 'Parts', everyMiles: null, everyMonths: null },
             custom: { name: 'Other', chip: 'Other', everyMiles: null, everyMonths: null }
         };
+        const OIL_MILES = [3000, 4000, 5000];
+        const COMMON_PARTS = ['Wiper blades', 'Cabin air filter', 'Engine air filter', 'Battery', 'Brake pads', 'Spark plugs'];
         const SERVICE_KIND_IDS = Object.keys(SERVICE_KINDS);
         const SOON_MILES = 500;
         const SOON_DAYS = 30;
@@ -1101,6 +1161,9 @@
         let showAllServices = false;
         let editingServiceId = null;
         let serviceKind = 'oil';
+        let serviceOilMiles = 5000;
+        let serviceParts = [];
+        let partOptions = [];
         let vehicles = load(VEHICLES_KEY, []);
         let currentId = load(CURRENT_KEY, null);
         let deleted = load(DELETED_KEY, {});
@@ -1676,6 +1739,20 @@
             const services = vehicleServices();
             const due = dueServices();
 
+            // When each part was last replaced, newest first
+            const lastReplaced = new Map();
+            services.forEach((service, order) => (service.parts || []).forEach(part => {
+                lastReplaced.delete(part.toLowerCase());
+                lastReplaced.set(part.toLowerCase(), { part, service, order });
+            }));
+            const replaced = [...lastReplaced.values()].sort((a, b) => b.order - a.order);
+            document.getElementById('partsList').innerHTML = replaced.length ? '<p class="records-title">Last replaced</p>' + replaced.map(({ part, service }) => `
+                <div class="stat-row">
+                    <span class="stat-label">${escapeHTML(part)}</span>
+                    <span class="part-when">${formatDateLong(service.date)}${service.odometer ? ` · ${service.odometer.toLocaleString()} mi` : ''}</span>
+                </div>
+            `).join('') : '';
+
             document.getElementById('dueList').innerHTML = due.map(d => `
                 <div class="due${d.overdue ? ' overdue' : ''}">
                     <div>
@@ -1706,17 +1783,15 @@
             }
 
             const shown = (showAllServices ? services : services.slice(-RECENT_SERVICES)).slice().reverse();
-            const spent = services.reduce((sum, s) => sum + (s.cost || 0), 0);
             list.innerHTML = '<p class="records-title">History</p>' + shown.map(service => {
-                const details = [
-                    service.odometer ? `${service.odometer.toLocaleString()} mi` : '',
-                    service.cost ? `$${service.cost.toFixed(2)}` : ''
-                ].filter(Boolean).join(' · ');
+                const details = service.odometer ? `${service.odometer.toLocaleString()} mi` : '';
                 return `
                     <div class="entry">
                         <div>
                             <span class="entry-date">${escapeHTML(serviceName(service))}</span><br>
                             <span class="entry-details">${formatDateLong(service.date)}${details ? ' · ' + details : ''}</span>
+                            ${service.kind !== 'parts' && service.parts && service.parts.length ? `<br><span class="entry-details">+ ${escapeHTML(service.parts.join(', '))}</span>` : ''}
+                            ${service.kind === 'parts' ? `<br><span class="entry-details">${escapeHTML(service.parts.join(', '))}</span>` : ''}
                             ${service.notes ? `<br><span class="entry-details">${escapeHTML(service.notes)}</span>` : ''}
                         </div>
                         <div class="entry-actions">
@@ -1725,7 +1800,7 @@
                         </div>
                     </div>
                 `;
-            }).join('') + (spent ? `<div class="stat-row upkeep-total"><span class="stat-label">Spent on upkeep</span><span class="stat-value">$${spent.toFixed(2)}</span></div>` : '');
+            }).join('');
         }
 
         function showMaintenance() {
@@ -1742,6 +1817,69 @@
                 `<button class="chip${kind === serviceKind ? ' selected' : ''}" onclick="pickServiceKind('${kind}')">${SERVICE_KINDS[kind].chip}</button>`
             ).join('');
             document.getElementById('serviceNameGroup').hidden = serviceKind !== 'custom';
+            document.getElementById('oilIntervalGroup').hidden = serviceKind !== 'oil';
+            document.getElementById('intervalGroup').hidden = serviceKind === 'oil' || serviceKind === 'parts';
+            document.getElementById('partsToggleGroup').hidden = serviceKind === 'parts';
+            const showParts = serviceKind === 'parts' || document.getElementById('partsToggle').checked;
+            document.getElementById('partsPicker').hidden = !showParts;
+            setText('partsPickerLabel', serviceKind === 'parts' ? 'What did you replace?' : 'What else did you replace?');
+
+            const oilOptions = OIL_MILES.includes(serviceOilMiles) ? OIL_MILES : [...OIL_MILES, serviceOilMiles].sort((a, b) => a - b);
+            document.getElementById('oilChips').innerHTML = oilOptions.map(miles =>
+                `<button class="chip${miles === serviceOilMiles ? ' selected' : ''}" onclick="pickOilMiles(${miles})">${miles.toLocaleString()} mi</button>`
+            ).join('');
+            renderPartChips();
+        }
+
+        function pickOilMiles(miles) {
+            serviceOilMiles = miles;
+            renderServiceKinds();
+        }
+
+        // Common parts, plus any this vehicle has had replaced before, plus anything just added
+        function renderPartChips() {
+            const seen = new Set();
+            const history = vehicleServices().flatMap(s => s.parts || []);
+            partOptions = [...COMMON_PARTS, ...history, ...serviceParts].filter(part => {
+                const key = part.toLowerCase();
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            const chosen = new Set(serviceParts.map(p => p.toLowerCase()));
+            document.getElementById('partChips').innerHTML = partOptions.map((part, i) =>
+                `<button class="chip${chosen.has(part.toLowerCase()) ? ' selected' : ''}" onclick="togglePart(${i})">${escapeHTML(part)}</button>`
+            ).join('') + `<button class="chip" onclick="showPartAdd()">+ other</button>`;
+        }
+
+        function togglePart(i) {
+            const part = partOptions[i];
+            const key = part.toLowerCase();
+            serviceParts = serviceParts.some(p => p.toLowerCase() === key)
+                ? serviceParts.filter(p => p.toLowerCase() !== key)
+                : [...serviceParts, part];
+            renderPartChips();
+        }
+
+        function showPartAdd() {
+            document.getElementById('partAdd').hidden = false;
+            document.getElementById('partName').focus();
+        }
+
+        function addPart() {
+            const input = document.getElementById('partName');
+            const part = input.value.trim();
+            if (part && !serviceParts.some(p => p.toLowerCase() === part.toLowerCase())) serviceParts.push(part);
+            input.value = '';
+            input.focus();
+            renderPartChips();
+        }
+
+        function resetParts(parts) {
+            serviceParts = parts.slice();
+            document.getElementById('partsToggle').checked = parts.length > 0;
+            document.getElementById('partName').value = '';
+            document.getElementById('partAdd').hidden = true;
         }
 
         function pickServiceKind(kind) {
@@ -1761,6 +1899,10 @@
             const source = previous || SERVICE_KINDS[serviceKind];
             document.getElementById('serviceEveryMiles').value = source.everyMiles || '';
             document.getElementById('serviceEveryMonths').value = source.everyMonths || '';
+            if (serviceKind === 'oil') {
+                serviceOilMiles = source.everyMiles || SERVICE_KINDS.oil.everyMiles;
+                renderServiceKinds();
+            }
         }
 
         function showServiceForm() {
@@ -1777,7 +1919,8 @@
             serviceKind = kind;
             document.getElementById('serviceName').value = name || '';
             document.getElementById('serviceDate').value = todayString();
-            ['serviceOdometer', 'serviceCost', 'serviceNotes'].forEach(id => document.getElementById(id).value = '');
+            ['serviceOdometer', 'serviceNotes'].forEach(id => document.getElementById(id).value = '');
+            resetParts([]);
             document.getElementById('serviceEditingNote').hidden = true;
             setText('saveServiceBtn', 'Save Service');
             fillInterval(true);
@@ -1796,7 +1939,8 @@
             document.getElementById('serviceName').value = service.name || '';
             document.getElementById('serviceDate').value = service.date;
             document.getElementById('serviceOdometer').value = service.odometer || '';
-            document.getElementById('serviceCost').value = service.cost || '';
+            serviceOilMiles = service.everyMiles || SERVICE_KINDS.oil.everyMiles;
+            resetParts(service.parts || []);
             document.getElementById('serviceEveryMiles').value = service.everyMiles || '';
             document.getElementById('serviceEveryMonths').value = service.everyMonths || '';
             document.getElementById('serviceNotes').value = service.notes || '';
@@ -1823,18 +1967,28 @@
                 return;
             }
             if (serviceKind === 'custom' && !name) {
-                alert('Say what was done (air filter, brakes, inspection…)');
+                alert('Say what was done (brakes, inspection, alignment…)');
                 return;
             }
 
+            // A part typed in but not yet added still counts
+            if (value('partName').trim()) addPart();
+            const withParts = serviceKind === 'parts' || document.getElementById('partsToggle').checked;
+            const parts = withParts ? serviceParts.slice() : [];
+            if (serviceKind === 'parts' && parts.length === 0) {
+                alert('Pick what you replaced');
+                return;
+            }
+
+            const number = id => parseInt(value(id)) > 0 ? parseInt(value(id)) : null;
             const fields = {
                 kind: serviceKind,
                 name,
                 date,
                 odometer: parseInt(value('serviceOdometer')) || null,
-                cost: parseFloat(value('serviceCost')) || null,
-                everyMiles: parseInt(value('serviceEveryMiles')) > 0 ? parseInt(value('serviceEveryMiles')) : null,
-                everyMonths: parseInt(value('serviceEveryMonths')) > 0 ? parseInt(value('serviceEveryMonths')) : null,
+                everyMiles: serviceKind === 'oil' ? serviceOilMiles : serviceKind === 'parts' ? null : number('serviceEveryMiles'),
+                everyMonths: serviceKind === 'parts' ? null : number('serviceEveryMonths'),
+                parts,
                 notes: value('serviceNotes').trim()
             };
 
@@ -2085,6 +2239,7 @@
                     cost: Number(s.cost) > 0 ? Number(s.cost) : null,
                     everyMiles: positive(s.everyMiles),
                     everyMonths: positive(s.everyMonths),
+                    parts: Array.isArray(s.parts) ? s.parts.map(p => String(p).trim().slice(0, 40)).filter(Boolean).slice(0, 20) : [],
                     notes: String(s.notes || '').slice(0, 200),
                     updated: Number(s.updated) || 0
                 }));
