@@ -5,6 +5,7 @@ A simple gas mileage tracker: log fill-ups, see MPG, price per gallon, and miles
 - **More than one vehicle:** keep separate logs for each car, truck or bike, each with its own little tile icon (pickup, sedan, SUV or motorcycle, in six colors). Tap **Vehicles** at the top to switch or add one.
 - **Charts you can scroll:** pick 3 months, 6 months, a year or all time, then tap the arrows (or swipe the charts) to move back and forth.
 - **All-time records:** best and worst tank, highest and lowest price per gallon.
+- **Maintenance:** log oil changes, tire rotations, or anything else (air filter, brakes, inspection), with cost and notes. Each one can say when the next is due, in miles, months, or both (whichever comes first). The app works out what's coming up from your latest odometer reading and flags anything overdue. Oil starts at 5,000 mi / 6 months and tires at 6,000 mi / 6 months; after that it repeats whatever you set last time. Tap **Done** on a reminder to log it again.
 - **Edit any entry** if you fat-fingered a number.
 - **Catches gaps:** if a tank's MPG is way off from that vehicle's usual (once it has 5+ tanks), the app figures a fill-up probably didn't get logged, leaves that tank out of your MPG, and asks you about it. You can also tick **Missed logging a fill-up before this one** when you add an entry.
 

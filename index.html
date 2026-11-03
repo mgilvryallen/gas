@@ -642,6 +642,74 @@
             margin: 0;
             font-size: 15px;
         }
+
+        .due {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px dotted var(--light-tan);
+            font-size: 15px;
+        }
+
+        .due-name {
+            color: var(--heading);
+        }
+
+        .due-tag {
+            font-size: 13px;
+            color: var(--tan);
+        }
+
+        .due.overdue .due-tag,
+        .due.overdue .due-name {
+            color: var(--rust);
+        }
+
+        .due .small-btn {
+            flex: none;
+        }
+
+        #dueList {
+            margin-bottom: 16px;
+        }
+
+        #dueList:empty {
+            display: none;
+        }
+
+        #serviceForm {
+            margin-bottom: 10px;
+        }
+
+        .service-kinds {
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .interval-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .interval-row .input-group {
+            flex: 1;
+        }
+
+        .interval-hint {
+            color: var(--muted);
+            font-size: 14px;
+            margin: -6px 0 16px;
+        }
+
+        #serviceList .records-title {
+            margin-top: 18px;
+        }
+
+        .upkeep-total {
+            margin-top: 6px;
+        }
     </style>
 </head>
 <body>
@@ -762,6 +830,7 @@
             </div>
             <div class="last-mpg" id="lastMPG"></div>
             <p class="suspect-note" id="suspectNote" hidden></p>
+            <p class="suspect-note" id="maintNote" hidden></p>
         </div>
 
         <div class="card" id="chartsSection">
@@ -795,6 +864,60 @@
             <button class="link-btn" id="showAllBtn" onclick="toggleShowAll()" hidden></button>
         </div>
 
+        <div class="card" id="maintenanceCard">
+            <h2>Maintenance</h2>
+            <div id="dueList"></div>
+            <button class="btn btn-secondary" id="logServiceBtn" onclick="openServiceForm('oil')">Log Service</button>
+
+            <div id="serviceForm" hidden>
+                <p class="editing-note" id="serviceEditingNote" hidden></p>
+                <div class="range-chips service-kinds" id="serviceKinds"></div>
+
+                <div class="input-group" id="serviceNameGroup">
+                    <label for="serviceName">What was done</label>
+                    <input type="text" id="serviceName" maxlength="40" placeholder="Air filter" onchange="fillInterval(false)">
+                </div>
+
+                <div class="input-group">
+                    <label for="serviceDate">Date</label>
+                    <input type="date" id="serviceDate">
+                </div>
+
+                <div class="input-group">
+                    <label for="serviceOdometer">Odometer</label>
+                    <input type="number" id="serviceOdometer" inputmode="numeric">
+                </div>
+
+                <div class="input-group">
+                    <label for="serviceCost">Cost ($)</label>
+                    <input type="number" id="serviceCost" step="0.01" inputmode="decimal" placeholder="optional">
+                </div>
+
+                <div class="interval-row">
+                    <div class="input-group">
+                        <label for="serviceEveryMiles">Next in (miles)</label>
+                        <input type="number" id="serviceEveryMiles" inputmode="numeric">
+                    </div>
+                    <div class="input-group">
+                        <label for="serviceEveryMonths">or (months)</label>
+                        <input type="number" id="serviceEveryMonths" inputmode="numeric">
+                    </div>
+                </div>
+                <p class="interval-hint">Whichever comes first. Leave both blank for no reminder.</p>
+
+                <div class="input-group">
+                    <label for="serviceNotes">Notes</label>
+                    <input type="text" id="serviceNotes" maxlength="200" placeholder="optional">
+                </div>
+
+                <button class="btn" onclick="saveService()" id="saveServiceBtn">Save Service</button>
+                <button class="btn btn-secondary" onclick="closeServiceForm()">Cancel</button>
+            </div>
+
+            <div id="serviceList"></div>
+            <button class="link-btn" id="showAllServicesBtn" onclick="toggleShowAllServices()" hidden></button>
+        </div>
+
         <div class="card" id="dataCard">
             <h2>Your Data</h2>
             <p class="note" id="dataNote"></p>
@@ -826,7 +949,7 @@
             <div class="data-links">
                 <button class="link-btn" id="copyTokenLink" onclick="copyToken()" hidden>copy token for another device</button>
                 <button class="link-btn" id="syncOffLink" onclick="disconnectSync()" hidden>turn off sync on this device</button>
-                <button class="link-btn danger-link" onclick="clearAllData()">delete all entries for this vehicle</button>
+                <button class="link-btn danger-link" onclick="clearAllData()">delete all fill-ups for this vehicle</button>
             </div>
         </div>
 
@@ -844,7 +967,19 @@
         const HINT_KEY = 'gasBrotherHideInstallHint';
         const DELETED_KEY = 'gasBrotherDeleted';
         const SYNC_KEY = 'gasSync';
+        const MAINT_KEY = 'gasMaintenance';
         const RECENT_COUNT = 10;
+        const RECENT_SERVICES = 5;
+
+        // Starting intervals; after the first one, each service repeats whatever was set last time
+        const SERVICE_KINDS = {
+            oil: { name: 'Oil change', chip: 'Oil', everyMiles: 5000, everyMonths: 6 },
+            tires: { name: 'Tire rotation', chip: 'Tires', everyMiles: 6000, everyMonths: 6 },
+            custom: { name: 'Other', chip: 'Other', everyMiles: null, everyMonths: null }
+        };
+        const SERVICE_KIND_IDS = Object.keys(SERVICE_KINDS);
+        const SOON_MILES = 500;
+        const SOON_DAYS = 30;
 
         // A tank this far from the vehicle's typical MPG probably hides an unlogged fill-up
         // (or a typo). Only judged once there are enough tanks to know what "typical" is.
@@ -926,6 +1061,7 @@
             localStorage.setItem(VEHICLES_KEY, JSON.stringify(vehicles));
             localStorage.setItem(CURRENT_KEY, JSON.stringify(currentId));
             localStorage.setItem(DELETED_KEY, JSON.stringify(deleted));
+            localStorage.setItem(MAINT_KEY, JSON.stringify(maintenance));
             if (!fromSync) scheduleSync();
         }
 
@@ -956,7 +1092,15 @@
             allEntries.sort((a, b) => a.date.localeCompare(b.date) || (a.odometer || 0) - (b.odometer || 0));
         }
 
+        function sortServices() {
+            maintenance.sort((a, b) => a.date.localeCompare(b.date) || (a.odometer || 0) - (b.odometer || 0));
+        }
+
         let allEntries = load(STORAGE_KEY, []);
+        let maintenance = load(MAINT_KEY, []);
+        let showAllServices = false;
+        let editingServiceId = null;
+        let serviceKind = 'oil';
         let vehicles = load(VEHICLES_KEY, []);
         let currentId = load(CURRENT_KEY, null);
         let deleted = load(DELETED_KEY, {});
@@ -977,8 +1121,12 @@
             if (!entry.id) entry.id = newId('e');
             if (!vehicles.some(v => v.id === entry.vehicleId)) entry.vehicleId = vehicles[0].id;
         });
+        maintenance.forEach(service => {
+            if (!vehicles.some(v => v.id === service.vehicleId)) service.vehicleId = vehicles[0].id;
+        });
         if (!vehicles.some(v => v.id === currentId)) currentId = vehicles[0].id;
         sortEntries();
+        sortServices();
         save();
 
         function currentVehicle() {
@@ -1090,7 +1238,7 @@
 
         function clearAllData() {
             const vehicle = currentVehicle();
-            if (confirm(`Delete ALL entries for ${vehicle.name}? This cannot be undone. Save a backup first if you might want them.`)) {
+            if (confirm(`Delete ALL fill-ups for ${vehicle.name}? Maintenance records stay. This cannot be undone. Save a backup first if you might want them.`)) {
                 vehicleEntries().forEach(e => forget(e.id));
                 allEntries = allEntries.filter(e => e.vehicleId !== currentId);
                 save();
@@ -1103,6 +1251,7 @@
             updateStats();
             updateEntriesList();
             updateCharts();
+            renderMaintenance();
             updateBackupStatus();
         }
 
@@ -1451,6 +1600,265 @@
             }, { passive: true });
         })();
 
+        // ---- Maintenance ----
+        // Each service record can say when the next one is due (miles and/or months from this one).
+        // The latest record of each kind (or each custom name) sets the reminder.
+
+        function vehicleServices(id = currentId) {
+            return maintenance.filter(s => s.vehicleId === id);
+        }
+
+        function findService(id) {
+            return maintenance.find(s => s.id === id);
+        }
+
+        function serviceKey(kind, name) {
+            return kind === 'custom' ? 'custom:' + String(name || '').trim().toLowerCase() : kind;
+        }
+
+        function serviceName(service) {
+            return service.kind === 'custom' ? service.name : SERVICE_KINDS[service.kind].name;
+        }
+
+        // Highest reading logged anywhere for this vehicle
+        function currentOdometer(id = currentId) {
+            const readings = [...vehicleEntries(id), ...vehicleServices(id)].map(item => item.odometer || 0);
+            return Math.max(0, ...readings) || null;
+        }
+
+        function daysUntil(dateStr) {
+            const utc = s => {
+                const [y, m, d] = s.split('-').map(Number);
+                return Date.UTC(y, m - 1, d);
+            };
+            return Math.round((utc(dateStr) - utc(todayString())) / 86400000);
+        }
+
+        function dueServices() {
+            const latest = new Map();
+            vehicleServices().forEach(s => latest.set(serviceKey(s.kind, s.name), s));
+            const odometer = currentOdometer();
+
+            return [...latest.values()].map(service => {
+                const due = { service, name: serviceName(service) };
+                if (service.everyMiles && service.odometer) {
+                    due.atMiles = service.odometer + service.everyMiles;
+                    due.milesLeft = odometer ? due.atMiles - odometer : null;
+                }
+                if (service.everyMonths) {
+                    due.byDate = addMonths(service.date, service.everyMonths);
+                    due.daysLeft = daysUntil(due.byDate);
+                }
+                const milesLeft = due.milesLeft ?? Infinity;
+                const daysLeft = due.daysLeft ?? Infinity;
+                due.overdue = milesLeft <= 0 || daysLeft < 0;
+                due.soon = !due.overdue && (milesLeft <= SOON_MILES || daysLeft <= SOON_DAYS);
+                due.rank = due.overdue ? 0 : due.soon ? 1 : 2;
+                return due;
+            }).filter(due => due.atMiles || due.byDate)
+                .sort((a, b) => a.rank - b.rank || (a.byDate || '9999').localeCompare(b.byDate || '9999') || (a.milesLeft ?? Infinity) - (b.milesLeft ?? Infinity));
+        }
+
+        function dueText(due) {
+            const parts = [];
+            if (due.atMiles) {
+                let miles = `at ${due.atMiles.toLocaleString()} mi`;
+                if (due.milesLeft !== null) {
+                    miles += due.milesLeft > 0 ? ` (${due.milesLeft.toLocaleString()} to go)` : ` (${(-due.milesLeft).toLocaleString()} past)`;
+                }
+                parts.push(miles);
+            }
+            if (due.byDate) parts.push(`by ${formatDateLong(due.byDate)}`);
+            return parts.join(' or ');
+        }
+
+        function renderMaintenance() {
+            const services = vehicleServices();
+            const due = dueServices();
+
+            document.getElementById('dueList').innerHTML = due.map(d => `
+                <div class="due${d.overdue ? ' overdue' : ''}">
+                    <div>
+                        <span class="due-name">${escapeHTML(d.name)}</span>${d.overdue ? ' <span class="due-tag">overdue</span>' : d.soon ? ' <span class="due-tag">soon</span>' : ''}<br>
+                        <span class="entry-details">${dueText(d)}</span>
+                    </div>
+                    <button class="small-btn" onclick="logAgain('${d.service.id}')">Done</button>
+                </div>
+            `).join('');
+
+            const overdue = due.filter(d => d.overdue);
+            const note = document.getElementById('maintNote');
+            note.hidden = overdue.length === 0;
+            if (overdue.length) {
+                const names = overdue.map(d => escapeHTML(d.name));
+                const list = names.length === 1 ? names[0] : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+                note.innerHTML = `${list} ${names.length === 1 ? 'is' : 'are'} overdue. <button class="link-btn" onclick="showMaintenance()">See maintenance</button>`;
+            }
+
+            const list = document.getElementById('serviceList');
+            const showAllBtn = document.getElementById('showAllServicesBtn');
+            showAllBtn.hidden = services.length <= RECENT_SERVICES;
+            showAllBtn.textContent = showAllServices ? 'Show recent only' : `Show all ${services.length} services`;
+
+            if (services.length === 0) {
+                list.innerHTML = '<p class="empty">Log an oil change or tire rotation and this will tell you when the next one is due.</p>';
+                return;
+            }
+
+            const shown = (showAllServices ? services : services.slice(-RECENT_SERVICES)).slice().reverse();
+            const spent = services.reduce((sum, s) => sum + (s.cost || 0), 0);
+            list.innerHTML = '<p class="records-title">History</p>' + shown.map(service => {
+                const details = [
+                    service.odometer ? `${service.odometer.toLocaleString()} mi` : '',
+                    service.cost ? `$${service.cost.toFixed(2)}` : ''
+                ].filter(Boolean).join(' · ');
+                return `
+                    <div class="entry">
+                        <div>
+                            <span class="entry-date">${escapeHTML(serviceName(service))}</span><br>
+                            <span class="entry-details">${formatDateLong(service.date)}${details ? ' · ' + details : ''}</span>
+                            ${service.notes ? `<br><span class="entry-details">${escapeHTML(service.notes)}</span>` : ''}
+                        </div>
+                        <div class="entry-actions">
+                            <button class="edit-btn" onclick="editService('${service.id}')">edit</button>
+                            <button class="delete-btn" onclick="deleteService('${service.id}')" aria-label="Delete service">×</button>
+                        </div>
+                    </div>
+                `;
+            }).join('') + (spent ? `<div class="stat-row upkeep-total"><span class="stat-label">Spent on upkeep</span><span class="stat-value">$${spent.toFixed(2)}</span></div>` : '');
+        }
+
+        function showMaintenance() {
+            document.getElementById('maintenanceCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function toggleShowAllServices() {
+            showAllServices = !showAllServices;
+            renderMaintenance();
+        }
+
+        function renderServiceKinds() {
+            document.getElementById('serviceKinds').innerHTML = SERVICE_KIND_IDS.map(kind =>
+                `<button class="chip${kind === serviceKind ? ' selected' : ''}" onclick="pickServiceKind('${kind}')">${SERVICE_KINDS[kind].chip}</button>`
+            ).join('');
+            document.getElementById('serviceNameGroup').hidden = serviceKind !== 'custom';
+        }
+
+        function pickServiceKind(kind) {
+            serviceKind = kind;
+            renderServiceKinds();
+            fillInterval(true);
+            if (kind === 'custom') document.getElementById('serviceName').focus();
+        }
+
+        // Repeat the interval from the last time this service was done, or the starting one.
+        // A custom name with no history keeps whatever was typed.
+        function fillInterval(force) {
+            if (editingServiceId) return;
+            const key = serviceKey(serviceKind, document.getElementById('serviceName').value);
+            const previous = vehicleServices().filter(s => serviceKey(s.kind, s.name) === key).pop();
+            if (!previous && !force) return;
+            const source = previous || SERVICE_KINDS[serviceKind];
+            document.getElementById('serviceEveryMiles').value = source.everyMiles || '';
+            document.getElementById('serviceEveryMonths').value = source.everyMonths || '';
+        }
+
+        function showServiceForm() {
+            const odometer = currentOdometer();
+            document.getElementById('serviceOdometer').placeholder = odometer ? `last logged ${odometer.toLocaleString()}` : '50000';
+            document.getElementById('logServiceBtn').hidden = true;
+            document.getElementById('serviceForm').hidden = false;
+            renderServiceKinds();
+            document.getElementById('serviceForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function openServiceForm(kind, name) {
+            editingServiceId = null;
+            serviceKind = kind;
+            document.getElementById('serviceName').value = name || '';
+            document.getElementById('serviceDate').value = todayString();
+            ['serviceOdometer', 'serviceCost', 'serviceNotes'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('serviceEditingNote').hidden = true;
+            setText('saveServiceBtn', 'Save Service');
+            fillInterval(true);
+            showServiceForm();
+        }
+
+        function logAgain(id) {
+            const service = findService(id);
+            openServiceForm(service.kind, service.name);
+        }
+
+        function editService(id) {
+            const service = findService(id);
+            editingServiceId = id;
+            serviceKind = service.kind;
+            document.getElementById('serviceName').value = service.name || '';
+            document.getElementById('serviceDate').value = service.date;
+            document.getElementById('serviceOdometer').value = service.odometer || '';
+            document.getElementById('serviceCost').value = service.cost || '';
+            document.getElementById('serviceEveryMiles').value = service.everyMiles || '';
+            document.getElementById('serviceEveryMonths').value = service.everyMonths || '';
+            document.getElementById('serviceNotes').value = service.notes || '';
+
+            const note = document.getElementById('serviceEditingNote');
+            note.textContent = `Editing the ${formatDateLong(service.date)} ${serviceName(service).toLowerCase()}`;
+            note.hidden = false;
+            setText('saveServiceBtn', 'Save Changes');
+            showServiceForm();
+        }
+
+        function closeServiceForm() {
+            editingServiceId = null;
+            document.getElementById('serviceForm').hidden = true;
+            document.getElementById('logServiceBtn').hidden = false;
+        }
+
+        function saveService() {
+            const value = id => document.getElementById(id).value;
+            const date = value('serviceDate');
+            const name = serviceKind === 'custom' ? value('serviceName').trim() : '';
+            if (!date) {
+                alert('Please fill in the date');
+                return;
+            }
+            if (serviceKind === 'custom' && !name) {
+                alert('Say what was done (air filter, brakes, inspection…)');
+                return;
+            }
+
+            const fields = {
+                kind: serviceKind,
+                name,
+                date,
+                odometer: parseInt(value('serviceOdometer')) || null,
+                cost: parseFloat(value('serviceCost')) || null,
+                everyMiles: parseInt(value('serviceEveryMiles')) > 0 ? parseInt(value('serviceEveryMiles')) : null,
+                everyMonths: parseInt(value('serviceEveryMonths')) > 0 ? parseInt(value('serviceEveryMonths')) : null,
+                notes: value('serviceNotes').trim()
+            };
+
+            const editing = editingServiceId && findService(editingServiceId);
+            if (editing) {
+                touch(Object.assign(editing, fields));
+            } else {
+                maintenance.push({ id: newId('m'), vehicleId: currentId, ...fields, updated: Date.now() });
+            }
+            sortServices();
+            save();
+            closeServiceForm();
+            updateDisplay();
+        }
+
+        function deleteService(id) {
+            if (!confirm('Delete this service record?')) return;
+            maintenance = maintenance.filter(s => s.id !== id);
+            forget(id);
+            if (id === editingServiceId) closeServiceForm();
+            save();
+            updateDisplay();
+        }
+
         // ---- Vehicles ----
 
         function renderVehicleBar() {
@@ -1485,7 +1893,9 @@
             currentId = id;
             showAll = false;
             chartEnd = null;
+            showAllServices = false;
             clearForm();
+            closeServiceForm();
             save();
             document.getElementById('garage').hidden = true;
             updateDisplay();
@@ -1549,12 +1959,16 @@
         function deleteVehicle() {
             const vehicle = vehicles.find(v => v.id === editingId);
             const count = vehicleEntries(editingId).length;
-            if (!confirm(`Delete ${vehicle.name} and its ${count} entries? This cannot be undone.`)) return;
+            const services = vehicleServices(editingId).length;
+            const serviceText = services ? ` and ${services} service record${services === 1 ? '' : 's'}` : '';
+            if (!confirm(`Delete ${vehicle.name}, its ${count} entries${serviceText}? This cannot be undone.`)) return;
 
             vehicles = vehicles.filter(v => v.id !== editingId);
             forget(editingId);
             vehicleEntries(editingId).forEach(e => forget(e.id));
+            vehicleServices(editingId).forEach(s => forget(s.id));
             allEntries = allEntries.filter(e => e.vehicleId !== editingId);
+            maintenance = maintenance.filter(s => s.vehicleId !== editingId);
             if (currentId === editingId) currentId = vehicles[0].id;
             save();
             closeEditor();
@@ -1567,7 +1981,7 @@
             const status = document.getElementById('backupStatus');
             const last = load(BACKUP_KEY, null);
 
-            if (allEntries.length === 0) {
+            if (allEntries.length === 0 && maintenance.length === 0) {
                 status.textContent = '';
                 status.classList.remove('stale');
                 return;
@@ -1591,7 +2005,8 @@
                 version: 2,
                 exported: new Date().toISOString(),
                 vehicles,
-                entries: allEntries
+                entries: allEntries,
+                maintenance
             };
             const filename = `gas-brother-backup-${todayString()}.json`;
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -1656,7 +2071,25 @@
                     updated: Number(e.updated) || 0
                 }));
 
-            return { vehicles: backupVehicles, entries };
+            const rawMaintenance = data && Array.isArray(data.maintenance) ? data.maintenance : [];
+            const positive = n => parseInt(n) > 0 ? parseInt(n) : null;
+            const services = rawMaintenance.filter(s => s && /^\d{4}-\d{2}-\d{2}$/.test(s.date) && SERVICE_KIND_IDS.includes(s.kind) &&
+                (s.kind !== 'custom' || String(s.name || '').trim()))
+                .map(s => ({
+                    id: isSafeId(s.id) ? s.id : newId('m'),
+                    vehicleId: isSafeId(s.vehicleId) ? s.vehicleId : null,
+                    kind: s.kind,
+                    name: s.kind === 'custom' ? String(s.name).trim().slice(0, 40) : '',
+                    date: s.date,
+                    odometer: positive(s.odometer),
+                    cost: Number(s.cost) > 0 ? Number(s.cost) : null,
+                    everyMiles: positive(s.everyMiles),
+                    everyMonths: positive(s.everyMonths),
+                    notes: String(s.notes || '').slice(0, 200),
+                    updated: Number(s.updated) || 0
+                }));
+
+            return { vehicles: backupVehicles, entries, maintenance: services };
         }
 
         function handleImport(event) {
@@ -1680,18 +2113,31 @@
                 const newVehicles = backup.vehicles.filter(v => !vehicles.some(existing => existing.id === v.id));
                 const knownIds = new Set([...vehicles, ...backup.vehicles].map(v => v.id));
                 const intoCurrent = backup.entries.filter(e => !knownIds.has(e.vehicleId)).length;
+                const serviceCount = backup.maintenance.length;
 
                 let question = `Restore ${backup.entries.length} entries`;
+                if (serviceCount) question += `, ${serviceCount} service record${serviceCount === 1 ? '' : 's'}`;
                 if (newVehicles.length) question += ` and ${newVehicles.length} vehicle${newVehicles.length === 1 ? '' : 's'}`;
                 if (intoCurrent === backup.entries.length) question += ` into ${currentVehicle().name}`;
                 if (!confirm(question + "? They'll be merged with what's already here (duplicates are skipped).")) return;
 
                 vehicles.push(...newVehicles.map(touch));
-                backup.entries.forEach(entry => {
-                    if (!knownIds.has(entry.vehicleId)) entry.vehicleId = currentId;
-                    touch(entry);
-                    delete deleted[entry.id];
+                [...backup.entries, ...backup.maintenance].forEach(item => {
+                    if (!knownIds.has(item.vehicleId)) item.vehicleId = currentId;
+                    touch(item);
+                    delete deleted[item.id];
                 });
+
+                const seenServices = new Set();
+                const servicesBefore = maintenance.length;
+                maintenance = [...maintenance, ...backup.maintenance].filter(service => {
+                    const keys = [service.id, `${service.vehicleId}|${serviceKey(service.kind, service.name)}|${service.date}|${service.odometer}`];
+                    if (keys.some(key => seenServices.has(key))) return false;
+                    keys.forEach(key => seenServices.add(key));
+                    return true;
+                });
+                sortServices();
+                const addedServices = maintenance.length - servicesBefore;
 
                 const seen = new Set();
                 const before = allEntries.length;
@@ -1704,7 +2150,7 @@
                 sortEntries();
                 save();
                 updateDisplay();
-                alert(`Added ${allEntries.length - before} new entries.`);
+                alert(`Added ${allEntries.length - before} new entries` + (serviceCount ? ` and ${addedServices} service records.` : '.'));
             };
             reader.readAsText(file);
             event.target.value = '';
@@ -1742,15 +2188,15 @@
         }
 
         function syncPayload() {
-            return JSON.stringify({ app: 'gas-brother', version: 2, synced: new Date().toISOString(), vehicles, entries: allEntries, deleted }, null, 1);
+            return JSON.stringify({ app: 'gas-brother', version: 2, synced: new Date().toISOString(), vehicles, entries: allEntries, maintenance, deleted }, null, 1);
         }
 
         // The same data always gives the same string, whatever order its fields were written in
         function canonical(data) {
-            const clean = cleanBackup(data) || { vehicles: [], entries: [] };
+            const clean = cleanBackup(data) || { vehicles: [], entries: [], maintenance: [] };
             const byId = (a, b) => a.id.localeCompare(b.id);
             const gone = data && typeof data.deleted === 'object' ? Object.keys(data.deleted).sort().map(id => [id, data.deleted[id]]) : [];
-            return JSON.stringify([clean.vehicles.sort(byId), clean.entries.sort(byId), gone]);
+            return JSON.stringify([clean.vehicles.sort(byId), clean.entries.sort(byId), clean.maintenance.sort(byId), gone]);
         }
 
         // Newest change wins for each id; anything deleted after its last change stays deleted
@@ -1764,7 +2210,7 @@
         }
 
         function mergeRemote(remoteData) {
-            const remote = cleanBackup(remoteData) || { vehicles: [], entries: [] };
+            const remote = cleanBackup(remoteData) || { vehicles: [], entries: [], maintenance: [] };
             const remoteDeleted = remoteData && typeof remoteData.deleted === 'object' ? remoteData.deleted : {};
             Object.entries(remoteDeleted).forEach(([id, time]) => {
                 if (isSafeId(id) && Number(time) > (deleted[id] || 0)) deleted[id] = Number(time);
@@ -1774,8 +2220,10 @@
             if (vehicles.length === 0) vehicles.push({ id: newId('v'), name: 'My Vehicle', type: 'sedan', color: 'silver', updated: Date.now() });
             const vehicleIds = new Set(vehicles.map(v => v.id));
             allEntries = mergeById(allEntries, remote.entries, deleted).filter(e => vehicleIds.has(e.vehicleId));
+            maintenance = mergeById(maintenance, remote.maintenance, deleted).filter(s => vehicleIds.has(s.vehicleId));
             if (!vehicleIds.has(currentId)) currentId = vehicles[0].id;
             sortEntries();
+            sortServices();
         }
 
         function scheduleSync() {
@@ -1795,9 +2243,9 @@
                 let content = file ? file.content : '{}';
                 if (file && file.truncated) content = await (await fetch(file.raw_url)).text();
                 const remoteData = JSON.parse(content || '{}');
-                const before = canonical({ vehicles, entries: allEntries, deleted });
+                const before = canonical({ vehicles, entries: allEntries, maintenance, deleted });
                 mergeRemote(remoteData);
-                const after = canonical({ vehicles, entries: allEntries, deleted });
+                const after = canonical({ vehicles, entries: allEntries, maintenance, deleted });
                 if (after !== before) {
                     save(true);
                     updateDisplay();
@@ -1832,7 +2280,7 @@
                         method: 'POST',
                         body: JSON.stringify({ description: 'Gas app sync (private, made by the Gas app)', public: false, files: { [SYNC_FILE]: { content: syncPayload() } } })
                     });
-                } else if (allEntries.length === 0) {
+                } else if (allEntries.length === 0 && maintenance.length === 0) {
                     // A brand-new device: take the synced log instead of adding an empty starter vehicle to it
                     vehicles.forEach(v => forget(v.id));
                 }
