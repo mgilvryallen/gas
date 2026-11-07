@@ -1040,7 +1040,7 @@
         // Starting intervals; after the first one, each service repeats whatever was set last time
         const SERVICE_KINDS = {
             oil: { name: 'Oil change', chip: 'Oil', everyMiles: 5000, everyMonths: 6 },
-            tires: { name: 'Tire rotation', chip: 'Tires', everyMiles: 6000, everyMonths: 6 },
+            tires: { name: 'Tire rotation', chip: 'Tires', everyMiles: 10000, everyMonths: null },
             parts: { name: 'Parts replaced', chip: 'Parts', everyMiles: null, everyMonths: null },
             custom: { name: 'Other', chip: 'Other', everyMiles: null, everyMonths: null }
         };
@@ -1196,6 +1196,16 @@
         maintenance.forEach(service => {
             if (!vehicles.some(v => v.id === service.vehicleId)) service.vehicleId = vehicles[0].id;
         });
+        // Tire rotations used to start at every 6,000 mi or 6 months; now it's every 10,000 mi.
+        // Rotations still on that old default move to the new one (ones you changed stay put).
+        let movedTires = false;
+        maintenance.forEach(service => {
+            if (service.kind === 'tires' && service.everyMiles === 6000 && service.everyMonths === 6) {
+                touch(Object.assign(service, { everyMiles: 10000, everyMonths: null }));
+                movedTires = true;
+            }
+        });
+        if (movedTires) localStorage.setItem(MAINT_KEY, JSON.stringify(maintenance));
         if (!vehicles.some(v => v.id === currentId)) currentId = vehicles[0].id;
         sortEntries();
         sortServices();
