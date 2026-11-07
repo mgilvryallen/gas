@@ -1,7 +1,7 @@
 {
   "name": "Gas",
   "short_name": "Gas",
-  "description": "A simple gas mileage tracker. Your data stays on your device.",
+  "description": "A gas mileage tracker: log fill-ups, see MPG, price per gallon and miles per month, for as many vehicles as you have. It also reminds you when the oil and tires are due.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
